@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>70s Echoes: The Fractal Tree</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #050510;
+            font-family: 'Courier New', Courier, monospace; /* Retro font */
+            transition: background-color 2s ease;
+            user-select: none;
+        }
+
+        #gameCanvas {
+            display: block;
+        }
+
+        /* UI Overlay */
+        #ui-layer {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        h1 {
+            margin: 0;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 0px #ff00de; /* 70s neon vibe */
+        }
+
+        /* The Typing Bar at the bottom */
+        #typing-display {
+            position: absolute;
+            bottom: 30px;
+            width: 100%;
+            text-align: center;
+            font-size: 2rem;
+            color: #00ffcc;
+            font-weight: bold;
+            text-shadow: 0 0 10px #00ffcc;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .cursor {
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* Screens */
+        #startScreen, #winScreen, #gameOverScreen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0,0,0,0.85);
+            color: white;
+            z-index: 10;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        button {
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            background: linear-gradient(90deg, #ff9a9e 0%, #fecfef 100%);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #333;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-top: 20px;
+            box-shadow: 0 0 15px rgba(255, 154, 158, 0.5);
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            background: linear-gradient(90deg, #fecfef 0%, #ff9a9e 100%);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="ui-layer">
+        <h1>Score: <span id="scoreDisplay">0</span></h1>
+        <p>Type the Song AND Author to destroy them.</p>
+    </div>
+
+    <div id="typing-display">
+        <span id="currentInputText"></span><span class="cursor">_</span>
+    </div>
+
+    <div id="startScreen">
+        <h1 style="font-size: 3rem; color:#f0f; text-shadow: 2px 2px #0ff;">GROOVY GARDEN</h1>
+        <p>The 70s hits are floating in the void.</p>
+        <p>Type the <b>"Song by Artist"</b> to clear them.</p>
+        <p>Grow the tree. Bring the Sun.</p>
+        <button onclick="startGame()">Start Listening</button>
+    </div>
+
+    <div id="winScreen" class="hidden">
+        <h1 style="color: #ffeeb0; text-shadow: 0 0 20px orange;">SUNSHINE DAY</h1>
+        <p>The tree is fully grown. The 70s live on.</p>
+        <button onclick="startGame()">Play Again</button>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        // --- 70s Data ---
+        // Pairs of Song + Artist. 
+        const hits = [
+            {s: "Stayin' Alive", a: "Bee Gees"},
+            {s: "Imagine", a: "John Lennon"},
+            {s: "Dancing Queen", a: "ABBA"},
+            {s: "Bohemian Rhapsody", a: "Queen"},
+            {s: "Hotel California", a: "Eagles"},
+            {s: "Superstition", a: "Stevie Wonder"},
+            {s: "Let It Be", a: "The Beatles"},
+            {s: "Go Your Own Way", a: "Fleetwood Mac"},
+            {s: "Rocket Man", a: "Elton John"},
+            {s: "I Will Survive", a: "Gloria Gaynor"},
+            {s: "Heroes", a: "David Bowie"},
+            {s: "Piano Man", a: "Billy Joel"},
+            {s: "Heart of Glass", a: "Blondie"},
+            {s: "Jolene", a: "Dolly Parton"},
+            {s: "Walk This Way", a: "Aerosmith"},
+            {s: "Born to Run", a: "Bruce Springsteen"},
+            {s: "September", a: "Earth Wind Fire"},
+            {s: "American Pie", a: "Don McLean"},
+            {s: "Roxanne", a: "The Police"},
+            {s: "Le Freak", a: "Chic"}
+        ];
+
+        // --- Audio System (Simple Synth) ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'type') {
+                // High blip for typing
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.05);
+                gain.gain.setValueAtTime(0.05, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                osc.start(now);
+                osc.stop(now + 0.05);
+            } else if (type === 'explode') {
+                // Noise/Crunch for explosion
+                osc.type = 'sawtooth'; // Sawtooth is buzzier
+                osc.frequency.setValueAtTime(100, now);
+                osc.frequency.exponentialRampToValueAtTime(10, now + 0.3);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } else if (type === 'win') {
+                // Chord
+                [440, 554, 659].forEach((freq, i) => {
+                    const o = audioCtx.createOscillator();
+                    const g = audioCtx.createGain();
+                    o.connect(g);
+                    g.connect(audioCtx.destination);
+                    o.type = 'triangle';
+                    o.frequency.value = freq;
+                    g.gain.setValueAtTime(0, now);
+                    g.gain.linearRampToValueAtTime(0.1, now + 0.1 + (i*0.1));
+                    g.gain.linearRampToValueAtTime(0, now + 2);
+                    o.start(now);
+                    o.stop(now + 2);
+                });
+            }
+        }
+
+
+        // --- Game Setup ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const inputDisplay = document.getElementById('currentInputText');
+        const startScreen = document.getElementById('startScreen');
+        const winScreen = document.getElementById('winScreen');
+
+        let width, height;
+        let animationId;
+        let lastTime = 0;
+        let score = 0;
+        let gameRunning = false;
+        let currentInput = "";
+        
+        const MAX_SCORE = 150; 
+        const SPAWN_RATE = 1500; // New word every 1.5 seconds (crowded!)
+        let lastSpawn = 0;
+
+        let words = [];
+        let particles = [];
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // --- Classes ---
+
+        class FloatingWord {
+            constructor() {
+                // Pick random song
+                const data = hits[Math.floor(Math.random() * hits.length)];
+                // Create the phrase: "Song by Artist"
+                this.text = `${data.s} by ${data.a}`; 
+                
+                this.x = -300; // Start further left
+                this.y = Math.random() * (height * 0.7) + 50; 
+                this.speed = Math.random() * 1.5 + 0.5; 
+                this.size = 18; 
+                this.color = `hsl(${Math.random() * 60 + 280}, 100%, 70%)`; // Pink/Purple retro hues
+                this.matched = false;
+            }
+
+            update() {
+                this.x += this.speed;
+            }
+
+            draw(input) {
+                ctx.font = `bold ${this.size}px 'Courier New', monospace`;
+                
+                // Logic to highlight matched characters
+                // Check if this word starts with what user typed
+                if (input.length > 0 && this.text.toLowerCase().startsWith(input.toLowerCase())) {
+                    
+                    // Draw the matched part in Green
+                    const matchPart = this.text.substring(0, input.length);
+                    const restPart = this.text.substring(input.length);
+
+                    ctx.fillStyle = "#00ff00"; // Green match
+                    ctx.fillText(matchPart, this.x, this.y);
+
+                    // Draw rest in normal color
+                    ctx.fillStyle = this.color;
+                    const matchWidth = ctx.measureText(matchPart).width;
+                    ctx.fillText(restPart, this.x + matchWidth, this.y);
+
+                    // Draw underline to show it's active
+                    ctx.fillRect(this.x, this.y + 5, ctx.measureText(this.text).width, 2);
+
+                } else {
+                    // Normal draw
+                    ctx.fillStyle = this.color;
+                    ctx.shadowBlur = 5;
+                    ctx.shadowColor = this.color;
+                    ctx.fillText(this.text, this.x, this.y);
+                    ctx.shadowBlur = 0;
+                }
+            }
+        }
+
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.vx = (Math.random() - 0.5) * 10;
+                this.vy = (Math.random() - 0.5) * 10;
+                this.life = 1.0;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life -= 0.03;
+            }
+            draw() {
+                ctx.globalAlpha = this.life;
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x, this.y, 4, 4); // Square particles for retro feel
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        // --- Core Functions ---
+
+        function startGame() {
+            score = 0;
+            words = [];
+            particles = [];
+            currentInput = "";
+            inputDisplay.innerText = "";
+            gameRunning = true;
+            scoreDisplay.innerText = score;
+            startScreen.classList.add('hidden');
+            winScreen.classList.add('hidden');
+            animate(0);
+            
+            // Resume audio context just in case
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function spawnWord(timestamp) {
+            if (timestamp - lastSpawn > SPAWN_RATE) {
+                words.push(new FloatingWord());
+                lastSpawn = timestamp;
+            }
+        }
+
+        // --- Typing Logic ---
+
+        window.addEventListener('keydown', (e) => {
+            if (!gameRunning) return;
+
+            // Handle Backspace
+            if (e.key === 'Backspace') {
+                currentInput = currentInput.slice(0, -1);
+                inputDisplay.innerText = currentInput;
+                playSound('type');
+                return;
+            }
+
+            // Handle letters, numbers, spaces, apostrophes
+            if (e.key.length === 1) {
+                currentInput += e.key;
+                inputDisplay.innerText = currentInput;
+                playSound('type');
+                checkMatch();
+            }
+        });
+
+        function checkMatch() {
+            // Check if currentInput matches any word completely (case insensitive)
+            const matchIndex = words.findIndex(w => w.text.toLowerCase() === currentInput.toLowerCase());
+
+            if (matchIndex !== -1) {
+                // Destroy Word
+                const target = words[matchIndex];
+                
+                // Create explosion
+                const width = ctx.measureText(target.text).width;
+                const centerX = target.x + width / 2;
+                const centerY = target.y - 10;
+
+                for(let i=0; i<30; i++) {
+                    particles.push(new Particle(centerX, centerY, target.color));
+                }
+
+                playSound('explode');
+                words.splice(matchIndex, 1);
+                currentInput = ""; // Reset input
+                inputDisplay.innerText = "";
+                
+                score += 10;
+                scoreDisplay.innerText = score;
+
+                if (score >= MAX_SCORE) {
+                    endLevel();
+                }
+            }
+        }
+
+
+        // --- Visuals (Tree & Sun) ---
+
+        function drawTree(startX, startY, len, angle, branchWidth, color) {
+            ctx.beginPath();
+            ctx.save();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = branchWidth;
+            ctx.translate(startX, startY);
+            ctx.rotate(angle * Math.PI / 180);
+            ctx.moveTo(0, 0);
+            ctx.lineTo(0, -len);
+            ctx.stroke();
+
+            if (len < 10) {
+                ctx.restore();
+                return;
+            }
+            
+            // Draw glowing tips (leaves)
+            if (len < 15) {
+                ctx.fillStyle = "#ff00de"; // Neon pink leaves
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = "#ff00de";
+                ctx.beginPath();
+                ctx.arc(0, -len, 4, 0, Math.PI*2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+
+            drawTree(0, -len, len * 0.75, angle + 20, branchWidth * 0.7, color);
+            drawTree(0, -len, len * 0.75, angle - 20, branchWidth * 0.7, color);
+            ctx.restore();
+        }
+
+        function drawSun(progress) {
+            const sunY = height - (height * 0.9 * progress); 
+            
+            ctx.beginPath();
+            // Retro Sun (Striped)
+            const gradient = ctx.createLinearGradient(width/2, sunY - 100, width/2, sunY + 100);
+            gradient.addColorStop(0, "#ffff00");
+            gradient.addColorStop(1, "#ff00de");
+            
+            ctx.fillStyle = gradient;
+            ctx.arc(width/2, sunY, 120, 0, Math.PI*2);
+            ctx.fill();
+            
+            // Sun Stripes
+            ctx.fillStyle = document.body.style.backgroundColor || "#050510";
+            for(let i=0; i<10; i++) {
+                ctx.fillRect(width/2 - 130, sunY + 20 + (i*12), 260, 4 + (i*1));
+            }
+        }
+
+        function drawBackground(progress) {
+            // Night (#050510) to Day/Purple Haze
+            // We'll shift to a vaporwave sunset gradient background logic
+            const r = Math.floor(5 + (60 - 5) * progress);
+            const g = Math.floor(5 + (20 - 5) * progress);
+            const b = Math.floor(16 + (60 - 16) * progress);
+            document.body.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+        }
+
+        // --- Main Loop ---
+
+        function animate(timestamp) {
+            if (!gameRunning) return;
+
+            ctx.clearRect(0, 0, width, height);
+
+            let progress = Math.min(score / MAX_SCORE, 1);
+
+            // 1. Background & Sun
+            drawBackground(progress);
+            if(progress > 0.05) drawSun(progress);
+
+            // 2. The Tree
+            const treeLen = 50 + (130 * progress);
+            // Color shifts from neon blue to white
+            const treeColor = `rgba(${100 + 155*progress}, ${255}, ${218 + 37*progress}, 0.8)`;
+            drawTree(width / 2, height, treeLen, 0, 15 * progress + 2, treeColor);
+
+            // 3. Game Objects
+            spawnWord(timestamp);
+            
+            words.forEach((word, index) => {
+                word.update();
+                word.draw(currentInput);
+                if (word.x > width + 200) words.splice(index, 1); // Cleanup
+            });
+
+            particles.forEach((p, index) => {
+                p.update();
+                p.draw();
+                if(p.life <= 0) particles.splice(index, 1);
+            });
+
+            animationId = requestAnimationFrame(animate);
+        }
+
+        function endLevel() {
+            gameRunning = false;
+            playSound('win');
+            
+            // Final render
+            ctx.clearRect(0, 0, width, height);
+            drawBackground(1);
+            drawSun(1);
+            drawTree(width / 2, height, 180, 0, 17, "#fff");
+            
+            winScreen.classList.remove('hidden');
+        }
+
+    </script>
+</body>
+</html>
