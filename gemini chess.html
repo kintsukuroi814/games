@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess V2 · Multi-Theme</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- THEME VARIABLES --- */
+        :root {
+            /* DEFAULT: Modern Clean (Lichess-inspired) */
+            --bg-body: #ebecef;
+            --bg-panel: #ffffff;
+            --text-main: #2d3436;
+            --text-muted: #636e72;
+            --board-light: #f0f1f1;
+            --board-dark: #87a6ac; /* Muted teal */
+            --highlight-move: rgba(255, 255, 0, 0.4);
+            --highlight-check: rgba(231, 76, 60, 0.5);
+            --accent: #3498db;
+            --btn-radius: 8px;
+            --font-main: 'Inter', sans-serif;
+            --shadow: 0 4px 20px rgba(0,0,0,0.08);
+            --piece-shadow: none;
+        }
+
+        [data-theme="midnight"] {
+            /* VARIANT 2: Midnight Glass (Cyberpunk/Dark) */
+            --bg-body: #111827;
+            --bg-panel: rgba(31, 41, 55, 0.7); /* Translucent */
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --board-light: #374151;
+            --board-dark: #1f2937;
+            --highlight-move: rgba(56, 189, 248, 0.3);
+            --highlight-check: rgba(239, 68, 68, 0.5);
+            --accent: #8b5cf6; /* Violet */
+            --btn-radius: 16px;
+            --font-main: 'Inter', sans-serif;
+            --shadow: 0 8px 32px rgba(0,0,0,0.4);
+            --piece-shadow: 0 0 10px rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        [data-theme="classic"] {
+            /* VARIANT 3: Classic Wood (Skeuomorphic) */
+            --bg-body: #f5e6d3;
+            --bg-panel: #fdf5e6;
+            --text-main: #3e2723;
+            --text-muted: #795548;
+            --board-light: #eecfa1; /* Wood Light */
+            --board-dark: #8b5a2b;  /* Wood Dark */
+            --highlight-move: rgba(100, 255, 100, 0.4);
+            --highlight-check: rgba(180, 0, 0, 0.5);
+            --accent: #d35400;
+            --btn-radius: 4px;
+            --font-main: 'Merriweather', serif;
+            --shadow: 5px 5px 15px rgba(62, 39, 35, 0.15);
+            --piece-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+        }
+
+        /* --- GLOBAL LAYOUT --- */
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 280px minmax(auto, 650px) 280px;
+            gap: 24px;
+            width: 95%;
+            max-width: 1400px;
+            padding: 20px;
+        }
+
+        /* --- PANELS --- */
+        .panel {
+            background: var(--bg-panel);
+            border-radius: var(--btn-radius);
+            box-shadow: var(--shadow);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            backdrop-filter: blur(10px); /* For glass theme */
+            transition: all 0.3s ease;
+        }
+
+        h2 { margin: 0; font-size: 1.2rem; font-weight: 700; opacity: 0.9; }
+
+        /* --- BUTTONS --- */
+        button {
+            border: none;
+            background: rgba(0,0,0,0.05);
+            color: var(--text-main);
+            padding: 12px;
+            border-radius: var(--btn-radius);
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        button:hover { background: rgba(0,0,0,0.1); transform: translateY(-1px); }
+        button:active { transform: translateY(0); }
+        
+        button.primary {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        button.primary:hover { filter: brightness(1.1); }
+
+        .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+        .btn-group button { flex: 1; font-size: 0.9rem; }
+        .btn-group button.active { background: var(--text-main); color: var(--bg-panel); }
+
+        /* --- THEME TOGGLE --- */
+        .theme-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+        .theme-dot {
+            width: 30px; 
+            height: 30px; 
+            border-radius: 50%; 
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: transform 0.2s;
+        }
+        .theme-dot:hover { transform: scale(1.2); }
+        .theme-dot.selected { border-color: var(--text-main); }
+
+        /* --- CHESS BOARD --- */
+        .board-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1/1;
+            user-select: none;
+        }
+
+        #board {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            width: 100%;
+            height: 100%;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            position: relative;
+        }
+
+        .square {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .square.light { background-color: var(--board-light); }
+        .square.dark { background-color: var(--board-dark); }
+        
+        /* Coordinate Labels */
+        .coord {
+            position: absolute;
+            font-size: 0.7rem;
+            font-weight: bold;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+        .coord.rank { top: 2px; left: 2px; }
+        .coord.file { bottom: 0px; right: 2px; }
+        .square.light .coord { color: var(--board-dark); }
+        .square.dark .coord { color: var(--board-light); }
+
+        /* Highlights */
+        .highlight-last { background-color: var(--highlight-move) !important; }
+        .highlight-check { background-color: var(--highlight-check) !important; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
+        
+        .hint-dot {
+            width: 20%;
+            height: 20%;
+            background: rgba(0,0,0,0.2);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .hint-ring {
+            width: 100%;
+            height: 100%;
+            border: 5px solid rgba(0,0,0,0.15);
+            border-radius: 50%;
+            box-sizing: border-box;
+            pointer-events: none;
+        }
+
+        /* --- PIECES (SVG) --- */
+        .piece {
+            width: 100%;
+            height: 100%;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            cursor: grab;
+            z-index: 10;
+            filter: drop-shadow(var(--piece-shadow));
+            transition: transform 0.1s;
+        }
+        .piece:active { cursor: grabbing; transform: scale(1.1); }
+        .piece.dragging { opacity: 0; } /* Hide original during drag */
+
+        /* --- TIMERS --- */
+        .timer-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: rgba(0,0,0,0.05);
+            border-radius: var(--btn-radius);
+            border-left: 5px solid transparent;
+        }
+        .timer-box.active { border-left-color: var(--accent); background: var(--bg-panel); box-shadow: var(--shadow); }
+        .timer-time { font-family: 'Courier New', monospace; font-size: 2rem; font-weight: 700; }
+        .timer-player { font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;}
+
+        /* --- MOVE HISTORY --- */
+        .history-scroll {
+            flex-grow: 1;
+            overflow-y: auto;
+            background: rgba(0,0,0,0.03);
+            border-radius: 4px;
+            padding: 10px;
+            font-family: monospace;
+            height: 300px;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+        }
+        .move-row {
+            width: 100%;
+            display: grid;
+            grid-template-columns: 40px 1fr 1fr;
+            padding: 4px;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .move-row:nth-child(odd) { background: rgba(0,0,0,0.02); }
+        .move-num { color: var(--text-muted); }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 1000px) {
+            .main-layout { grid-template-columns: 1fr; max-width: 600px; }
+            .panel { order: 2; }
+            .board-wrapper { order: 1; margin-bottom: 20px; }
+        }
+    </style>
+</head>
+<body data-theme="default">
+
+    <div class="theme-selector">
+        <div class="theme-dot selected" style="background: #ebecef;" onclick="setTheme('default')" title="Modern Clean"></div>
+        <div class="theme-dot" style="background: #111827;" onclick="setTheme('midnight')" title="Midnight Glass"></div>
+        <div class="theme-dot" style="background: #eecfa1;" onclick="setTheme('classic')" title="Classic Wood"></div>
+    </div>
+
+    <div class="main-layout">
+        
+        <div class="panel">
+            <h2>Game Setup</h2>
+            <div class="btn-group">
+                <button onclick="setTime(60)">Bullet</button>
+                <button onclick="setTime(180)">Blitz 3</button>
+                <button class="active" onclick="setTime(600)">Rapid 10</button>
+                <button onclick="setTime(0)">∞ No Time</button>
+            </div>
+            
+            <button class="primary" onclick="initGame()">New Game</button>
+            <button onclick="undoMove()">Undo Move</button>
+            <button onclick="toggleSound()">
+                <span id="sound-icon">🔊</span> Sound On
+            </button>
+        </div>
+
+        <div class="board-area">
+            <div class="timer-box" id="timer-b">
+                <div class="timer-player">Black</div>
+                <div class="timer-time" id="time-b">10:00</div>
+            </div>
+
+            <div style="height: 15px;"></div>
+
+            <div class="board-wrapper">
+                <div id="board"></div>
+            </div>
+
+            <div style="height: 15px;"></div>
+
+            <div class="timer-box active" id="timer-w">
+                <div class="timer-player">White</div>
+                <div class="timer-time" id="time-w">10:00</div>
+            </div>
+            <div id="status" style="text-align: center; margin-top:10px; font-weight:bold; color: var(--text-muted);">White to move</div>
+        </div>
+
+        <div class="panel">
+            <h2>Move History</h2>
+            <div class="history-scroll" id="history"></div>
+            <button onclick="copyPGN()">Copy PGN</button>
+        </div>
+    </div>
+
+    <script>
+        // --- ASSETS: SVG PIECES ---
+        const svgs = {
+            w: { p: 'https://upload.wikimedia.org/wikipedia/commons/4/45/Chess_plt45.svg', r: 'https://upload.wikimedia.org/wikipedia/commons/7/72/Chess_rlt45.svg', n: 'https://upload.wikimedia.org/wikipedia/commons/7/70/Chess_nlt45.svg', b: 'https://upload.wikimedia.org/wikipedia/commons/b/b1/Chess_blt45.svg', q: 'https://upload.wikimedia.org/wikipedia/commons/1/15/Chess_qlt45.svg', k: 'https://upload.wikimedia.org/wikipedia/commons/4/42/Chess_klt45.svg' },
+            b: { p: 'https://upload.wikimedia.org/wikipedia/commons/c/c7/Chess_pdt45.svg', r: 'https://upload.wikimedia.org/wikipedia/commons/f/ff/Chess_rdt45.svg', n: 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Chess_ndt45.svg', b: 'https://upload.wikimedia.org/wikipedia/commons/9/98/Chess_bdt45.svg', q: 'https://upload.wikimedia.org/wikipedia/commons/4/47/Chess_qdt45.svg', k: 'https://upload.wikimedia.org/wikipedia/commons/f/f0/Chess_kdt45.svg' }
+        };
+
+        // --- STATE ---
+        const game = new Chess();
+        let boardEl = document.getElementById('board');
+        let selectedSquare = null;
+        let gameActive = false;
+        let soundEnabled = true;
+        let timeLimit = 600;
+        let timers = { w: 600, b: 600 };
+        let timerInterval = null;
+        
+        // --- INIT ---
+        window.onload = () => { initGame(); };
+
+        function initGame() {
+            game.reset();
+            gameActive = true;
+            timers = { w: timeLimit, b: timeLimit };
+            stopTimers();
+            if(timeLimit > 0) startTimer();
+            renderBoard();
+            updateUI();
+        }
+
+        // --- THEME SWITCHER ---
+        function setTheme(theme) {
+            document.body.setAttribute('data-theme', theme);
+            document.querySelectorAll('.theme-dot').forEach(d => d.classList.remove('selected'));
+            event.target.classList.add('selected');
+        }
+
+        function setTime(seconds) {
+            timeLimit = seconds;
+            // Update button visual
+            document.querySelectorAll('.btn-group button').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            initGame();
+        }
+
+        // --- BOARD RENDERING ---
+        function renderBoard() {
+            boardEl.innerHTML = '';
+            const board = game.board();
+            
+            for(let row=0; row<8; row++) {
+                for(let col=0; col<8; col++) {
+                    const squareCode = String.fromCharCode(97+col) + (8-row);
+                    const isLight = (row+col)%2===0;
+                    
+                    const squareDiv = document.createElement('div');
+                    squareDiv.className = `square ${isLight ? 'light' : 'dark'}`;
+                    squareDiv.dataset.id = squareCode;
+                    
+                    // Coordinates
+                    if(col===0) squareDiv.innerHTML += `<span class="coord rank">${8-row}</span>`;
+                    if(row===7) squareDiv.innerHTML += `<span class="coord file">${String.fromCharCode(97+col)}</span>`;
+
+                    // Move Highlighting
+                    const lastMove = game.history({verbose: true}).pop();
+                    if(lastMove && (lastMove.from === squareCode || lastMove.to === squareCode)) {
+                        squareDiv.classList.add('highlight-last');
+                    }
+                    if(game.in_check() && board[row][col] && board[row][col].type === 'k' && board[row][col].color === game.turn()) {
+                        squareDiv.classList.add('highlight-check');
+                    }
+
+                    // Render Piece
+                    const piece = board[row][col];
+                    if(piece) {
+                        const img = document.createElement('div');
+                        img.className = 'piece';
+                        img.style.backgroundImage = `url(${svgs[piece.color][piece.type]})`;
+                        img.draggable = true;
+                        
+                        // Drag Events
+                        img.addEventListener('dragstart', (e) => handleDragStart(e, squareCode));
+                        img.addEventListener('dragend', handleDragEnd);
+                        
+                        squareDiv.appendChild(img);
+                    }
+
+                    // Click/Drop Events
+                    squareDiv.addEventListener('click', () => handleClick(squareCode));
+                    squareDiv.addEventListener('dragover', (e) => e.preventDefault()); // Allow drop
+                    squareDiv.addEventListener('drop', (e) => handleDrop(e, squareCode));
+                    
+                    // Legal Move Hints
+                    if(selectedSquare) {
+                        const moves = game.moves({ square: selectedSquare, verbose: true });
+                        const move = moves.find(m => m.to === squareCode);
+                        if(move) {
+                            const hint = document.createElement('div');
+                            hint.className = move.captured ? 'hint-ring' : 'hint-dot';
+                            squareDiv.appendChild(hint);
+                        }
+                    }
+
+                    boardEl.appendChild(squareDiv);
+                }
+            }
+        }
+
+        // --- INTERACTION LOGIC ---
+        let draggedPieceSquare = null;
+
+        function handleDragStart(e, square) {
+            if(!gameActive) return;
+            const piece = game.get(square);
+            if(piece.color !== game.turn()) {
+                e.preventDefault();
+                return;
+            }
+            draggedPieceSquare = square;
+            selectedSquare = square; // Also select it visually
+            setTimeout(() => e.target.classList.add('dragging'), 0);
+            renderBoard(); // To show hints immediately
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+            draggedPieceSquare = null;
+        }
+
+        function handleDrop(e, targetSquare) {
+            e.preventDefault();
+            if(draggedPieceSquare) {
+                attemptMove(draggedPieceSquare, targetSquare);
+            }
+        }
+
+        function handleClick(square) {
+            if(!gameActive) return;
+            
+            const piece = game.get(square);
+            
+            // If clicking same square, deselect
+            if(selectedSquare === square) {
+                selectedSquare = null;
+                renderBoard();
+                return;
+            }
+
+            // If a piece is already selected, try to move
+            if(selectedSquare) {
+                const moveSuccess = attemptMove(selectedSquare, square);
+                if(!moveSuccess && piece && piece.color === game.turn()) {
+                    // Clicked another friendly piece -> switch selection
+                    selectedSquare = square;
+                    renderBoard();
+                }
+            } else if (piece && piece.color === game.turn()) {
+                // Select piece
+                selectedSquare = square;
+                renderBoard();
+            }
+        }
+
+        function attemptMove(from, to) {
+            try {
+                const move = game.move({ from, to, promotion: 'q' });
+                if(move) {
+                    playSound(move);
+                    selectedSquare = null;
+                    if(game.game_over()) endGame();
+                    
+                    // AI Move (Simple)
+                    if(gameActive && game.turn() === 'b') {
+                        setTimeout(makeRandomMove, 250);
+                    }
+                    
+                    renderBoard();
+                    updateUI();
+                    return true;
+                }
+            } catch(e) {}
+            return false;
+        }
+
+        function makeRandomMove() {
+            if(!gameActive) return;
+            const moves = game.moves();
+            const move = moves[Math.floor(Math.random() * moves.length)];
+            game.move(move);
+            playSound({ flags: 'n' }); // Simple move sound
+            renderBoard();
+            updateUI();
+            if(game.game_over()) endGame();
+        }
+
+        // --- UI UPDATES ---
+        function updateUI() {
+            // Status
+            const turn = game.turn() === 'w' ? "White" : "Black";
+            let status = `${turn} to move`;
+            if(game.in_check()) status += " (Check!)";
+            document.getElementById('status').innerText = status;
+
+            // Active Timer Highlight
+            document.getElementById('timer-w').classList.toggle('active', game.turn() === 'w');
+            document.getElementById('timer-b').classList.toggle('active', game.turn() === 'b');
+
+            // History
+            const hist = game.history();
+            let html = '';
+            for(let i=0; i<hist.length; i+=2) {
+                html += `<div class="move-row">
+                    <div class="move-num">${(i/2)+1}.</div>
+                    <div>${hist[i]}</div>
+                    <div>${hist[i+1] || ''}</div>
+                </div>`;
+            }
+            const historyEl = document.getElementById('history');
+            historyEl.innerHTML = html;
+            historyEl.scrollTop = historyEl.scrollHeight;
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            document.getElementById('sound-icon').innerText = soundEnabled ? '🔊' : '🔇';
+        }
+
+        function playSound(move) {
+            if(!soundEnabled) return;
+            // Using a simple oscillator beep for portability (no external mp3s needed)
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            
+            const isCapture = move.flags.includes('c') || move.flags.includes('e');
+            const isCheck = game.in_check();
+
+            if(isCheck) osc.frequency.value = 600;
+            else if(isCapture) osc.frequency.value = 300; // Low thud
+            else osc.frequency.value = 200;
+
+            osc.type = 'sine';
+            gain.gain.setValueAtTime(0.1, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.1);
+        }
+
+        // --- TIMERS ---
+        function startTimer() {
+            if(timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if(!gameActive) return;
+                const turn = game.turn();
+                timers[turn]--;
+                
+                document.getElementById('time-w').innerText = formatTime(timers.w);
+                document.getElementById('time-b').innerText = formatTime(timers.b);
+
+                if(timers[turn] <= 0) {
+                    endGame("Time");
+                }
+            }, 1000);
+        }
+
+        function stopTimers() {
+            if(timerInterval) clearInterval(timerInterval);
+        }
+
+        function formatTime(s) {
+            if(s === Infinity) return "∞";
+            const m = Math.floor(s/60);
+            const sec = s % 60;
+            return `${m}:${sec < 10 ? '0'+sec : sec}`;
+        }
+
+        function endGame(reason) {
+            gameActive = false;
+            stopTimers();
+            let msg = "Game Over";
+            if(game.in_checkmate()) msg = "Checkmate!";
+            else if(game.in_draw()) msg = "Draw";
+            else if(reason === "Time") msg = "Time's Up!";
+            document.getElementById('status').innerText = msg;
+            alert(msg);
+        }
+
+        function undoMove() {
+            game.undo();
+            if(game.turn() === 'b') game.undo(); // Undo AI move too
+            renderBoard();
+            updateUI();
+            gameActive = true;
+            if(timeLimit > 0) startTimer(); // Restart timer if it was stopped
+        }
+        
+        function copyPGN() {
+            navigator.clipboard.writeText(game.pgn());
+            alert("PGN Copied!");
+        }
+
+        // Fix layout on resize
+        window.onresize = renderBoard;
+    </script>
+</body>
+</html>
