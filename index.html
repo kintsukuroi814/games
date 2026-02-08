@@ -3,692 +3,454 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Slovenian Pop Typer: The Tree of Triglav</title>
+    <title>Project Kintsukuroi</title>
+    <!-- Importing a book-like serif font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto+Mono:wght@700&display=swap');
+        :root {
+            --bg-color: #1a1a1a;
+            --paper-color: #f4e4bc;
+            --ink-color: #2b2b2b;
+            --accent-gold: #c5a059;
+        }
 
-        body {
+        body, html {
             margin: 0;
-            overflow: hidden;
-            background-color: #050510;
-            font-family: 'Roboto Mono', monospace;
-            user-select: none;
+            padding: 0;
+            height: 100%;
+            font-family: 'Crimson Text', serif;
+            background-color: var(--bg-color);
+            overflow: hidden; /* Prevent scrolling, handle inside book */
         }
 
-        /* UI Layers */
-        #ui-layer {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            right: 20px;
-            color: white;
-            pointer-events: none;
-            z-index: 5;
-            display: flex;
-            justify-content: space-between;
-            text-shadow: 2px 2px 0 #000;
-        }
-
-        .stat-box {
-            background: rgba(0, 0, 0, 0.5);
-            padding: 10px 20px;
-            border-radius: 8px;
-            border: 2px solid #fff;
-        }
-
-        h1, h2, h3 { margin: 0; }
-
-        #timerDisplay { color: #ff5555; font-size: 1.5rem; }
-        #scoreDisplay { color: #55ffff; font-size: 1.5rem; }
-
-        /* Typing Bar */
-        #typing-display {
-            position: absolute;
-            bottom: 40px;
+        /* --- LOGIN SCREEN STYLES --- */
+        #login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            text-align: center;
-            font-size: 3rem;
-            color: #00ffcc;
-            font-weight: bold;
-            text-shadow: 0 0 15px #00ffcc;
-            z-index: 5;
-            pointer-events: none;
-        }
-
-        /* Fail/Funny Popup Text */
-        #fail-popup {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 2rem;
-            color: #ff3333;
-            font-weight: bold;
-            text-shadow: 2px 2px 0 #fff;
-            opacity: 0;
-            transition: opacity 0.3s;
-            z-index: 6;
-            pointer-events: none;
-            text-align: center;
-        }
-
-        /* Screens */
-        #startScreen, #endScreen {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
+            height: 100%;
+            background-color: #000;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: rgba(10, 10, 20, 0.95);
-            color: white;
-            z-index: 10;
+            z-index: 1000;
+            transition: opacity 1s ease;
         }
 
-        .hidden { display: none !important; }
-
-        input[type="text"] {
-            padding: 15px;
-            font-size: 1.2rem;
-            border-radius: 5px;
-            border: none;
-            margin: 20px;
+        .riddle-container {
             text-align: center;
-            font-family: 'Roboto Mono', monospace;
-            width: 300px;
-        }
-
-        button {
-            padding: 15px 40px;
-            font-size: 1.2rem;
-            background: linear-gradient(90deg, #00c6ff 0%, #0072ff 100%);
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            color: white;
-            font-weight: bold;
-            text-transform: uppercase;
-            margin-top: 10px;
-            box-shadow: 0 0 15px rgba(0, 198, 255, 0.5);
-            transition: transform 0.2s;
-        }
-        button:hover { transform: scale(1.05); }
-
-        /* Scoreboard Table */
-        table {
-            border-collapse: collapse;
-            margin-top: 20px;
-            width: 80%;
+            color: var(--accent-gold);
             max-width: 600px;
-            background: rgba(255,255,255,0.1);
+            padding: 20px;
         }
-        th, td {
+
+        .riddle-text {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            letter-spacing: 1px;
+            font-style: italic;
+        }
+
+        input[type="password"] {
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid var(--accent-gold);
+            color: #fff;
+            font-size: 1.2rem;
+            text-align: center;
             padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid rgba(255,255,255,0.2);
+            outline: none;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 3px;
         }
-        th { color: #00ffcc; }
-        .nickname { color: #ff00de; font-style: italic; font-size: 0.9rem; }
+
+        #error-msg {
+            color: #ff4444;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        /* --- BOOK STYLES --- */
+        #book-wrapper {
+            display: none; /* Hidden by default */
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 1.5s ease;
+        }
+
+        .book {
+            background-color: var(--paper-color);
+            width: 100%;
+            max-width: 700px;
+            height: 85vh;
+            padding: 40px 60px;
+            box-shadow: 
+                inset 20px 0 50px rgba(0,0,0,0.1), /* Spine shadow */
+                10px 10px 30px rgba(0,0,0,0.5);   /* External shadow */
+            border-radius: 5px 15px 15px 5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page-content {
+            height: 100%;
+            overflow-y: auto; /* Allow scrolling if page is too long, though we try to paginate */
+            color: var(--ink-color);
+            font-size: 1.2rem;
+            line-height: 1.8;
+            text-align: justify;
+        }
+
+        /* Hide scrollbar for cleaner look */
+        .page-content::-webkit-scrollbar { width: 0; }
+        .page-content { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .page {
+            display: none; /* Hide all pages initially */
+            animation: fadeIn 0.8s;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* Typography details */
+        p { margin-bottom: 1.5em; text-indent: 1.5em; }
+        p:first-of-type { text-indent: 0; }
+        
+        /* Drop cap for the very first letter of the book */
+        .page:first-child p:first-child::first-letter {
+            font-size: 3.5em;
+            float: left;
+            line-height: 0.8;
+            margin-right: 0.1em;
+            color: var(--bg-color);
+        }
+
+        .separator {
+            text-align: center;
+            margin: 20px 0;
+            color: #888;
+        }
+
+        /* Navigation Controls */
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 40px;
+            box-sizing: border-box;
+            font-family: sans-serif;
+            font-size: 0.8rem;
+            color: #666;
+            pointer-events: none; /* Let clicks pass through to buttons */
+        }
+
+        .btn-nav {
+            pointer-events: auto;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-family: 'Crimson Text', serif;
+            font-size: 1rem;
+            color: #444;
+            transition: color 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .btn-nav:hover { color: #000; font-weight: bold; }
+        .btn-nav:disabled { color: #ccc; cursor: default; }
+
+        .page-number { align-self: center; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 600px) {
+            .book { padding: 20px 25px; height: 90vh; border-radius: 5px; }
+            .page-content { font-size: 1.1rem; }
+        }
     </style>
 </head>
 <body>
 
-    <div id="ui-layer">
-        <div class="stat-box">SCORE: <span id="scoreDisplay">0</span></div>
-        <div class="stat-box">TIME: <span id="timerDisplay">03:00</span></div>
+    <!-- LOGIN SECTION -->
+    <div id="login-overlay">
+        <div class="riddle-container">
+            <div class="riddle-text">
+                "I am the art of embracing damage.<br>
+                I mend the broken with gold.<br>
+                What is my name?"
+            </div>
+            <input type="password" id="password-input" placeholder="ENTER KEY" autocomplete="off">
+            <div id="error-msg">ACCESS DENIED</div>
+        </div>
     </div>
 
-    <div id="fail-popup"></div>
+    <!-- BOOK SECTION -->
+    <div id="book-wrapper" style="display: none;"> <!-- Inline style needed for JS toggle -->
+        <div class="book">
+            <div class="page-content" id="content-area">
+                
+                <!-- PAGE 1 -->
+                <div class="page active">
+                    <p>Serpentine descending down a mountain, military boots grinding along the unpaved road. Currents flow in the background of silence. All operators in position. The plan was simple: destabilize the country, offer them aid, install the operators, and overtake.</p>
+                    <p>Some have foreseen this ancient method. That’s where our units came into play. We called them platforms. Psychological operations have proven decisive in the past. Rootkits in the subconscious ticked exactly as we wanted them to. Their thoughts below the surface had been planted, reinforced, and used predictably for our purposes. We named them “sleepers.” We transformed them into devices capable of executing commands via radio frequency signals. Other triggers included music, photos, and the most effective stimuli—smell.</p>
+                    <p>Force and blackmail brought us to a certain level of efficiency, but over time, resistance was better subdued through conditioning and platforms. Almost all entry points—we called them “doors”—were accessed through trust, evoking love, and exploiting the raw tissue of the psyche by inducing individuals or groups into chronic stress and flooding them with information. The goal was to make them susceptible to C programming while strongly distracted by a task. Usually, subjects succumbed to this suggestion within three to five months. Sleep deprivation accelerated the process.</p>
+                    <p>We knew the program was active when the subject woke up every night at 3 a.m., dreaming of the structures and triggers we installed. The programs started losing their effect after three months of losing contact with the inductor.</p>
+                </div>
 
-    <div id="typing-display">
-        <span id="currentInputText"></span><span style="animation:blink 1s infinite">_</span>
+                <!-- PAGE 2 -->
+                <div class="page">
+                    <p>Three psychological platforms were commonly used: one labeled “Parent,” the second “Adult,” and the third “Child”—also called “Ego states.” This was a modified version of Eric Berne’s transactional analysis, adapted for covert operations by the special units of leading countries and some influential corporations.</p>
+                    <p>A priest was used as a vector for triggers. Their training made them resistant to three of the five methods employed. It was my specialty to infiltrate systems. My first goal was to gather intelligence and clear any personal interference.</p>
+                    <p>One of our operatives discovered shortly before a mission that both his parents had burned to death in an elderly home. Despite this trauma, his performance was superb, and he maintained his inductor role for another six months. After completing his objective, he was isolated and observed until waves of sorrow and other emotions surfaced. His state served as a model for the X9 unit training. We entered CRISPR tissue and DNA manipulation fused with nano-bio processors. We achieved a collective awareness among units—they operated as a single consciousness.</p>
+                    <p>We kept entire units in abandoned Buddhist temples as “sleeper cells.” The number of active processes in Europe approached 1,300. Countries had been overtaken from the inside out, working their way from administration to the political core. The populace had long been under the influence of an AI algorithm.</p>
+                </div>
+
+                <!-- PAGE 3 -->
+                <div class="page">
+                    <p>There were two rebel groups aware of this movement, one of which was led by the former sleeper. He exhibited an unprecedented level of awareness, with his subconscious more expressed than anything recorded. The firm became aware of him when he was arrested and isolated on charges of forming a sect in a remote mountain village. No one heard from them for three years until members appeared simultaneously in groups of three across 50 capitals worldwide. They simply stood still for exactly twenty-four hours, then disappeared into the crowds like ghosts. Most individuals were unaware of this. No one knew how he managed to synchronize them without technology. He didn’t stand out nor cause harm, but his objectives remained unknown.</p>
+                    <p>We kept him under observation, and after six days, the guards began believing they were him. They recalled events from his childhood with vivid detail. Highly trained operatives with psy training lasted only nine days before showing signs of a security breach. He recited access keys held by the guards during interrogation—none of them remembered talking with him.</p>
+                    <p>“Your use of code is childish. You leave the platforms unguarded. If I can access them in two days, they can do it in under seven hours.”</p>
+                    <p>“Who are they?”</p>
+                    <p><i>He did not respond.</i></p>
+                </div>
+
+                <!-- PAGE 4 -->
+                <div class="page">
+                    <p>His use of an invented language—an altered form of neuro-linguistic programming and code-switching—was his signature.</p>
+                    <p>He managed to escape from an underground research facility on German soil—an undiscovered Gestapo bunker repurposed for weapons testing and biological experiments. Cameras showed he was accompanied by three guards, walking at exactly the same distance from each other, with him in the middle. He vanished. His team was never identified again.</p>
+                    <p class="separator">***</p>
+                    <p>All forces led double lives. On one side, we played gods; privately, we concealed this world from ourselves. I often stayed in a beach bar to enjoy normality, knowing I could never fully return once I’d glimpsed the other side. None of us understood the depths of our applications—that was the true thrill.</p>
+                    <p>Before me stood a pint of beer with a generous pour. Behind it, the girl working as the bartender looked at me with concern.</p>
+                    <p>“It’s well over the line,” I said appreciatively. I made her laugh. She was the boss’s daughter, recently finished high school and entering a new chapter. I noticed her distant awareness of her role as a bartender. You can always tell who was cut out for something “more” in their lives.</p>
+                </div>
+
+                <!-- PAGE 5 -->
+                <div class="page">
+                    <p>I recalled my years bartending—studying after shifts, using the coffee machine and restaurant kitchens to make snacks late at night. I often talked with guests long after closing, learning valuable information about their work. They tended to open up at the bar.</p>
+                    <p>The girl’s jeans were dangerously short. Her golden, curly hair stood out like a rebellious statement. I always had a thing for female bartenders.</p>
+                    <p>One morning, I woke up under the bar with a glass of water and a note beside me. It read, “My shift was over. Call me when you wake up.” I messaged her the next afternoon—thanking her for the water and avoiding calling security. Getting wasted like that would cause problems at work.</p>
+                    <p>Her name was Natalia. I visited the bar after a week and learned she had quit.</p>
+                    <p>Next mission wasn’t scheduled, and none of us knew the exact timing of deployment.</p>
+                    <p>That evening, I walked home for an hour to clear my mind. I noticed an unanswered call and a message just before arriving at the agency-managed apartment:</p>
+                    <p><strong>“Can I see you today? It’s urgent.”</strong></p>
+                </div>
+                
+                <!-- PAGE 6 -->
+                <div class="page">
+                    <p><i>I’d never had this kind of relationship with her, but it was as if she knew no introductions were necessary. I replied, “Yeah, come on over.”</i></p>
+                    <p>“You should stop mixing tequila with beer; you’re not the type.”</p>
+                    <p>“What type do I strike you as?”</p>
+                    <p>“Sober, gentle. Sipping the heavy surface of red wine.”</p>
+                    <p>“I like the Irish pub. You have good beer.”</p>
+                    <p>“You and I both know the beer is below average. You fell in love with me. You’re easy to read.”</p>
+                    <p><i>I was stunned at how obvious everything had become.</i></p>
+                    <p>“I may have killed a man. He’s still lying in the hallway, bleeding from his head. He wasn’t moving when I left. I don’t know what to do.”</p>
+                    <p>“How? Why? How did you...”</p>
+                    <p>“I’m kidding. Just wanted to see how you’d react. There’s a small meeting today with my roommate. Want to meet her?”</p>
+                    <p>“I barely know you,” I replied, laughing.</p>
+                    <p>“It’ll be fun, I promise,” she smiled.</p>
+                </div>
+
+                <!-- PAGE 7 -->
+                <div class="page">
+                    <p><i>Her long legs drew me deeper into the night, but I hesitated. The situation felt awkward.</i></p>
+                    <p>“I know you better than you think, Kint. Don’t be afraid. Besides, we already slept together that night you passed out at the bar. You were nailing me on the counter. I haven’t been fucked that well in ages. You kept talking some weird numbers before blacking out. Anyway, I wrote my number so it would be easier.”</p>
+                    <p><i>I laughed, realizing she was telling the truth.</i></p>
+                    <p>“Tequila and beer aren’t my poison, you say... fuck.”</p>
+                    <p><i>She lit a cigarette and sent a message to her roommate. The smoke drifted, breaking the shadows of my room.</i></p>
+                    <p>“What are you doing? I’ll have to decline. I have work in the morning.”</p>
+                    <p>“No, you don’t. I know what you do. But that’s irrelevant now.”</p>
+                    <p><i>I was curious—what did she think she knew about me and my career?</i></p>
+                    <p>“You had him locked up in your facility for eight days. At least, that’s what you believed. He wasn’t locked up; he wasn’t even there.”</p>
+                </div>
+
+                <!-- PAGE 8 -->
+                <div class="page">
+                    <p><i>I pulled out my firearm and pressed her against the wall. “Start talking!”</i></p>
+                    <p><i>She kissed me and grabbed my crotch so hard I almost splattered her brains on the wall.</i></p>
+                    <p>“I am the new recruit. Security clearance is Aurora-7.”</p>
+                    <p>“I gathered vital information on the movement. But you’ll have to fuck it out of me,” <i>she said daringly.</i> “My roommate will be here soon.”</p>
+                    <p>“Is Natalie your name?”</p>
+                    <p><i>It was a stupid question; operatives never used real names—they had codes.</i></p>
+                    <p>“We have an update on Cologne. The squad followed through with the procedure. However, we believe Kint acted out of plan.”</p>
+                    <p>“How come you were briefed on this as a recruit?”</p>
+                    <p>“It’s standard protocol to check for potential loose ends. But you’re right—he’s a legend among the ranks. I’ve never met him personally. Are you close?”</p>
+                    <p>“We did some work together. I haven’t heard from him in almost a year. I knew it was only a matter of time before he lost track.”</p>
+                </div>
+                
+                <!-- PAGE 9 -->
+                <div class="page">
+                    <p>“We need to contain the damage. We need your assessment of what he’s capable of.”</p>
+                    <p>“So, new blood replaces the old dogs, and you want me to rat him out? That’s not the code. Listen, someone will be behind your back sooner or later. Would you want that person guarding yours? It’s not the code.”</p>
+                    <p>“She’s here.”</p>
+                    <p><i>A formal-looking middle-aged woman appeared at the door. Her perfectly trimmed hair suggested strictness, but her first smile shattered that assumption.</i></p>
+                    <p>“God, I hate this cover—a fucking librarian again. Hmm, you’re cute. Don’t worry. Natalie was joking about the sex part. I’m happily married with children, and Natalie just had her fun. Her specialty, actually. She gathers good data. I’m Rosemarie—you can call me Rose.”</p>
+                    <p><i>She shook my hand and asked for a glass of wine. As I poured, I glimpsed her undressing her top and bra to remove some wearable electronics. I also noticed scars on her skin—probably the communication mods. An incredibly attractive being. Natalie laid back on the couch, lit another cigarette, and began updating Rose on the Cologne operation.</i></p>
+                </div>
+
+                <!-- PAGE 10 -->
+                <div class="page">
+                    <p>I had two chilled wine glasses in the fridge and a bottle of Casillero del Diablo. I opened a beer for myself and set out some finger food.</p>
+                    <p>Natalie managed to perform a penetration test on my laptop while I was in the kitchen.</p>
+                    <p>“You need to be more careful with your credentials. I pinged you and received way more data than intended. Why aren’t you using the company hardware?”</p>
+                    <p>“It’s my personal laptop; the operative one is offline in my backpack.”</p>
+                    <p>“That’s a security risk. Do you remember the ’97 attack on the company? Forensics revealed a leak from an operator’s personal laptop.”</p>
+                    <p>“It was a coordinated inside job with an inside man. We suspect Kint,” Rose added.</p>
+                    <p>I felt the condensed frost from the beer bottle on my fingertips. Somehow, it seemed to be getting colder. Both women looked at me, as if scanning the back of my retina for a corpus delicti.</p>
+                    <p>“Let’s get this show on the road. Cheers, ladies!”</p>
+                </div>
+
+                <!-- PAGE 11 -->
+                <div class="page">
+                    <p><i>They exchanged glances while sipping wine. I could tell they were unsure if I would cooperate.</i></p>
+                    <p>“Kint is just like all of us—gifted in some field, with a difficult past. Events in his life defied all prediction models. Some even called him a prophet. He could sense events before they happened, and this preternatural awareness saved his neck on many missions. However, predicting women proved difficult—that’s where I came in.”</p>
+                    <p><i>Natalie chuckled; Rose shot her a look.</i></p>
+                    <p>“I mean, I could often tell what they had in mind. I’m not a mind reader, though.”</p>
+                    <p>“Would you describe him as a sadist?” Rose asked softly.</p>
+                    <p>“He wasn’t exactly a sadist, but I’ve seen what he’s capable of. He didn’t enjoy doing those things, but his performance was an art form.”</p>
+                    <p>“I see… Natalie, please,” Rose said calmly.</p>
+                    <p><i>Natalie slowly set her gadgets aside, sipped her wine, and let her fingers drift over Rose’s shoulder as she moved closer to me.</i></p>
+                </div>
+                
+                <!-- PAGE 12 -->
+                <div class="page">
+                    <p>“What do you think you’re doing?”</p>
+                    <p>“Just what we’re good at. Relax. Be honest,” Rose explained.</p>
+                    <p><i>Natalie lifted her skirt halfway, revealing the tips of her breasts as she kneeled. I let her unzip my pants, and she eagerly went at it as if waiting for this moment for a year. Her tongue rolled around the tip, and I was instantly turned on. I grabbed her hair and pulled her closer.</i></p>
+                    <p>“No. She’s in charge,” Rose said, as if reading my mind.</p>
+                    <p>“What is this?”</p>
+                    <p>“We need to extract some information from you,” Natalie replied with a sly smile.</p>
+                    <p><i>Rose began undressing herself as if she had all the time in the world, kissing Natalie’s neck and trying not to disturb her pleasure. Rose’s lips moved to mine, and she licked my upper lip to tease me.</i></p>
+                    <p>“Aren’t you happily married?”</p>
+                    <p>“Now you know why,” I replied.</p>
+                </div>
+
+                <!-- PAGE 13 -->
+                <div class="page">
+                    <p><i>Natalie slipped Rose onto my erect penis and held her in her arms as she slowly rode me. They kissed passionately, as if lovers who hadn’t seen each other in months. I pulled both of them closer.</i></p>
+                    <p class="separator">***</p>
+                    <p><i>We woke up wrapped in each other's arms, a warm blanket shielding us from the outside world. Rose was still beneath the blanket. Somehow, they had invited themselves back to enjoy me again. Natalie caressed her neck, playing with herself—still staring directly into my eyes.</i></p>
+                    <p><i>In all my years of service, I’d never experienced anything like this. I came so hard I felt dizzy. I fell asleep quickly after. When I woke, a croissant, orange juice, and a pot of coffee awaited on a tray on the table. They were gone without a trace. I looked around, questioning if it was even real. The wine was half drunk, as were the beers. I lit a cigarette and took a bite of the croissant. Under the coffee cup, I found a small note, like one from a fortune cookie. It read: “Rosebud.” It was Kint.</i></p>
+                </div>
+
+                <!-- PAGE 14 -->
+                <div class="page">
+                    <p><i>“Rosebud” was the codename for the operation that cleared a hospital in Russia. Today marked exactly ten years since it happened. For a moment, I felt sorrow. Many civilians had lost their lives that night as collateral damage. Kint had saved two operatives from bleeding out. I was, thankfully, unharmed physically, but the nightmares persisted long afterward. It was one of those jobs. Fuck, I can’t believe he remembered. He even gave the recruits the clearance number—typical Kint.</i></p>
+                    <p><i>Nobody ever discovered what part of his training he’d undergone. Rumor has it he fought his personal demons for a long time before joining the forces. He botched his first mission, lost a female operative, and descended into madness. Nobody heard from him for three years. He was seen on a mountain top, rescued by local climbers. They reported he was dehydrated, delusional, with an obvious intent to end his life there. After that incident, he began developing his artistic side—music and intensive therapy helped revive what was left of him.</i></p>
+                </div>
+
+                <!-- PAGE 15 -->
+                <div class="page">
+                    <p><i>After recovery, he fell in love. A calmness accompanied him from that moment. I didn’t recognize him at first; he was later promoted into cyber units and the quick response division—stepping stones to the psy squad and logistics. No one has seen him since.</i></p>
+                    <p><i>It seems he knows what everyone in the firm is doing—something like a patron with a dark past. His trademark was often changing camouflage and moving swiftly between different circles. His wife described him as a Greek god Hermes—living between worlds of life and death, appearing wherever he was needed most.</i></p>
+                    <p><i>The Cologne mission was staged. All “victims” on board were our new recruits—they played dead with state-of-the-art effects. The footage was used as leverage to expose the underground hierarchy.</i></p>
+                </div>
+
+                <!-- PAGE 16 -->
+                <div class="page">
+                    <p><i>Music from R.E.M. played through the vinyl record in a rustic teahouse. A Luger was loaded, waiting to fire. People started falling from their seats upon noticing the gun. The mask covered my face. The 70-year-old son of Reich’s security official looked me sharply in the eyes before being eliminated—two bullets in his torso, one in his neck, and four in his head. I removed the last bullet from the barrel as a reminder of a job well done. Witnesses shrank back in fear. I heard screams as I left the café. Heavy rain began falling as I slipped into a side alley. It felt cleansing. I entered the church—a good place to gather my thoughts for a report. A priest appeared beside me as I reflected on the event.</i></p>
+                    <p>“You did well, my son. The passage is under the altar. Evac-team and new ID are waiting on the other side. Did you keep the last bullet?”</p>
+                    <p>“Of course, Father.”</p>
+                    <p>“Godspeed.”</p>
+                </div>
+            </div>
+
+            <div class="controls">
+                <div class="page-number"><span id="page-num">1</span> / <span id="total-pages">1</span></div>
+                <div>
+                    <button class="btn-nav" id="prev-btn" onclick="changePage(-1)" disabled>Previous</button>
+                    &nbsp;&nbsp;|&nbsp;&nbsp;
+                    <button class="btn-nav" id="next-btn" onclick="changePage(1)">Next</button>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <div id="startScreen">
-        <h1 style="color:#00ffcc; margin-bottom:10px;">SLOVENIAN HITS TYPER</h1>
-        <p>Type Song + Artist to grow the tree.</p>
-        <p>Phase 1: Slow | Phase 2: Fast | Phase 3: Chaos</p>
-        
-        <input type="text" id="playerNameInput" placeholder="Enter Your Name" maxlength="12">
-        <button onclick="initGame()">Start Game</button>
-        
-        <h3>High Scores</h3>
-        <table id="startScoreTable">
-            </table>
-    </div>
-
-    <div id="endScreen" class="hidden">
-        <h1 id="winnerText" style="color: gold; text-align:center; padding: 20px;"></h1>
-        <h2 id="finalScoreText"></h2>
-        <p id="playerIdentityDisplay"></p>
-        <button onclick="resetGame()">Play Again</button>
-        
-        <h3>Leaderboard</h3>
-        <table id="endScoreTable"></table>
-    </div>
-
-    <canvas id="gameCanvas"></canvas>
 
     <script>
-        // --- DATA: Slovenian Hits ---
-        const rawHits = [
-            {s: "Brizgalna Brizga", a: "Atomik Harmonik"},
-            {s: "Ti si moj sonček", a: "Agropop"},
-            {s: "Krokodilčki", a: "Čuki"},
-            {s: "Pot v X", a: "Siddharta"},
-            {s: "Soba 102", a: "Jan Plestenjak"},
-            {s: "Od višine se zvrti", a: "Vlado Kreslin"},
-            {s: "Silvija", a: "Magnifico"},
-            {s: "Cela ulica nori", a: "Kingston"},
-            {s: "Gorska Roža", a: "Andrej Šifrer"},
-            {s: "Čebelar", a: "Lojze Slak"},
-            {s: "Samo Ljubezen", a: "Sestre"},
-            {s: "Maček Muri", a: "Neca Falk"},
-            {s: "Greva dol", a: "Vlado Kreslin"},
-            {s: "Platana", a: "Siddharta"},
-            {s: "Lahko noč Piran", a: "Anika Horvat"},
-            {s: "Bit", a: "Zmelkoow"},
-            {s: "Siva Pot", a: "Aleksander Mežek"},
-            {s: "Dan Ljubezni", a: "Pepel in Kri"},
-            {s: "Jagode in čokolada", a: "Rok 'n' Band"},
-            {s: "Mala Terasa", a: "Bele Vrane"},
-            {s: "Daleč je za naju pomlad", a: "Adi Smolar"},
-            {s: "Ne zameri mi", a: "Leeloojamais"},
-            {s: "Voda", a: "Dan D"},
-            {s: "Poletna noč", a: "Marjana Deržaj"},
-            {s: "Zemlja pleše", a: "Videosex"},
-            {s: "Moja Mama", a: "Big Foot Mama"},
-            {s: "Hir aj kam", a: "Magnifico"},
-            {s: "Na Soncu", a: "Siddharta"},
-            {s: "Štajerska lady", a: "Kingston"},
-            {s: "Komar", a: "Čuki"},
-            {s: "Anita ni nikoli", a: "Šank Rock"},
-            {s: "Tih deževen dan", a: "1X Band"},
-            {s: "Mini maxi", a: "Be Pop"},
-            {s: "Romeo in Julija", a: "Flirrt"},
-            {s: "Pojdi z menoj", a: "Siddharta"},
-            {s: "Nika", a: "Rock'n'Band"},
-            {s: "Lačni fran", a: "Zoran Predin"},
-            {s: "Ledena", a: "Siddharta"},
-            {s: "Ti znaš", a: "Miran Rudan"},
-            {s: "Ujel si se", a: "Tabu"}
-        ];
-
-        // --- DATA: Funny Texts ---
-        const winnerQuotes = [
-            "You type faster than a Bora wind!",
-            "Triglav bows down to your skills!",
-            "You are the Prešeren of Keyboards!",
-            "Better than grandmother's Potica!",
-            "Luka Dončić wishes he had your hands!",
-            "You have conquered the Alps!",
-            "Truly a legend of the Sava river!",
-            "Even the Human Fish is impressed!",
-            "King of the Hayrack!",
-            "You shine brighter than Bled lake!",
-            "Slovenia has a new hero!",
-            "Faster than a Renault Twingo going downhill!",
-            "You collected more points than mushrooms in autumn!",
-            "Your fingers are national treasures!",
-            "Martin Krpan could not do better!",
-            "Absolute legend of Tivoli!",
-            "The Dragons of Ljubljana respect you!",
-            "Sweeter than Kremšnita!",
-            "You are the true Kekec!",
-            "Approved by the Ministry of Culture!"
-        ];
-
-        const failQuotes = [
-            "Fingers like čevapčiči?",
-            "Too much Cviček?",
-            "Focus, Kekec!",
-            "Did a bear scare you?",
-            "Keyboard slipped?",
-            "Too much Potica?",
-            "Are you sleeping?",
-            "Typing like a cow?",
-            "Where is your rhythm?",
-            "Need more coffee?"
-        ];
-
-        const nicknameSuffixes = [
-            "The Potica Destroyer", "The Alpine Eagle", "The Soča Surfer", 
-            "The Dragon Tamer", "The Cviček Connoisseur", "The Polka King/Queen", 
-            "The Cave Dweller", "The Keyboard Accordionist", "The Winter Olympian", 
-            "The Pumpkin Oil Baron"
-        ];
-
-        // --- Audio System ---
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        /* --- IT SECTION: LOGIC --- */
         
-        function playSound(type) {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            const now = audioCtx.currentTime;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
+        // 1. LOGIN LOGIC
+        const passwordInput = document.getElementById('password-input');
+        const loginOverlay = document.getElementById('login-overlay');
+        const bookWrapper = document.getElementById('book-wrapper');
+        const errorMsg = document.getElementById('error-msg');
+        const correctPass = "kintsukuroi";
 
-            if (type === 'type') {
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(800, now);
-                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.05);
-                gain.gain.setValueAtTime(0.02, now);
-                gain.gain.linearRampToValueAtTime(0, now + 0.05);
-                osc.start(now); osc.stop(now + 0.05);
-            } else if (type === 'lock') {
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(440, now);
-                osc.frequency.linearRampToValueAtTime(660, now + 0.2);
-                gain.gain.setValueAtTime(0.1, now);
-                gain.gain.linearRampToValueAtTime(0, now + 0.3);
-                osc.start(now); osc.stop(now + 0.3);
-            } else if (type === 'explode') {
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(200, now);
-                osc.frequency.exponentialRampToValueAtTime(10, now + 0.3);
-                gain.gain.setValueAtTime(0.1, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
-                osc.start(now); osc.stop(now + 0.3);
-            } else if (type === 'fail') {
-                osc.type = 'square';
-                osc.frequency.setValueAtTime(150, now);
-                osc.frequency.linearRampToValueAtTime(100, now + 0.2);
-                gain.gain.setValueAtTime(0.1, now);
-                gain.gain.linearRampToValueAtTime(0, now + 0.2);
-                osc.start(now); osc.stop(now + 0.2);
-            }
-        }
-
-        // --- Game Logic ---
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const scoreDisplay = document.getElementById('scoreDisplay');
-        const timerDisplay = document.getElementById('timerDisplay');
-        const inputDisplay = document.getElementById('currentInputText');
-        const popup = document.getElementById('fail-popup');
-
-        let width, height;
-        let animationId;
-        let score = 0;
-        let timeLeft = 180; // 3 minutes
-        let gameRunning = false;
-        let currentInput = "";
-        let playerName = "Player";
-        let playerNickname = "";
-        
-        let spawnRate = 2000;
-        let lastSpawn = 0;
-        let words = [];
-        let particles = [];
-        let activeHits = []; // Copy of hits to remove from to avoid repeats
-        let timerInterval;
-
-        // High Score System
-        function getHighScores() {
-            return JSON.parse(localStorage.getItem('sloPopScores')) || [];
-        }
-
-        function saveHighScore(name, nick, score) {
-            const scores = getHighScores();
-            scores.push({ name, nick, score });
-            scores.sort((a, b) => b.score - a.score);
-            localStorage.setItem('sloPopScores', JSON.stringify(scores.slice(0, 10)));
-        }
-
-        function renderScoreTable(tableId) {
-            const table = document.getElementById(tableId);
-            const scores = getHighScores();
-            table.innerHTML = `<tr><th>Name</th><th>Nickname</th><th>Score</th></tr>`;
-            scores.forEach(s => {
-                table.innerHTML += `<tr><td>${s.name}</td><td class="nickname">${s.nick}</td><td>${s.score}</td></tr>`;
-            });
-        }
-
-        function resize() {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resize);
-        resize();
-        renderScoreTable('startScoreTable');
-
-        // --- Classes ---
-
-        class FloatingWord {
-            constructor(text, pairId, type) {
-                this.text = text;
-                this.pairId = pairId;
-                this.type = type;
-                this.x = -Math.random() * 200 - 150;
-                this.y = Math.random() * (height * 0.7) + 50;
-                
-                // Speed determined by Timer Phase
-                let baseSpeed = 0.5;
-                if (timeLeft < 120) baseSpeed = 1.2; // Phase 2
-                if (timeLeft < 60) baseSpeed = 2.0;  // Phase 3
-                
-                this.speed = Math.random() * 1.0 + baseSpeed;
-                this.size = 20;
-                this.color = type === 'song' ? "#ff88ff" : "#88ffff";
-                this.isPrimed = false;
-            }
-
-            update() {
-                if (this.isPrimed) this.x += 0.2; // Slow down when waiting
-                else this.x += this.speed;
-            }
-
-            draw(input) {
-                ctx.font = `bold ${this.size}px 'Roboto Mono', monospace`;
-                
-                if (this.isPrimed) {
-                    ctx.fillStyle = "#FFD700";
-                    ctx.shadowBlur = 15;
-                    ctx.shadowColor = "orange";
-                    ctx.fillText(this.text + " [WAITING]", this.x, this.y);
-                    ctx.shadowBlur = 0;
-                    return;
-                }
-
-                if (input.length > 0 && this.text.toLowerCase().startsWith(input.toLowerCase())) {
-                    const matchPart = this.text.substring(0, input.length);
-                    const restPart = this.text.substring(input.length);
-                    
-                    ctx.fillStyle = "#00ff00";
-                    ctx.fillText(matchPart, this.x, this.y);
-                    
-                    ctx.fillStyle = this.color;
-                    const w = ctx.measureText(matchPart).width;
-                    ctx.fillText(restPart, this.x + w, this.y);
-                    
-                    ctx.fillRect(this.x, this.y+4, ctx.measureText(this.text).width, 2);
+        passwordInput.addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') {
+                if (this.value.toLowerCase().trim() === correctPass) {
+                    // Success Animation
+                    this.style.borderColor = "#4BB543"; // Green
+                    loginOverlay.style.opacity = "0";
+                    setTimeout(() => {
+                        loginOverlay.style.display = "none";
+                        bookWrapper.style.display = "flex"; // Make it visible in DOM
+                        // Small timeout to allow the display change to register before opacity transition
+                        setTimeout(() => {
+                            bookWrapper.style.opacity = "1"; 
+                        }, 50);
+                    }, 1000);
                 } else {
-                    ctx.fillStyle = this.color;
-                    ctx.fillText(this.text, this.x, this.y);
+                    // Failure Animation
+                    errorMsg.style.opacity = "1";
+                    this.style.borderColor = "#ff4444";
+                    setTimeout(() => { errorMsg.style.opacity = "0"; }, 2000);
                 }
-            }
-        }
-
-        class Particle {
-            constructor(x, y, color) {
-                this.x = x; this.y = y; this.color = color;
-                this.vx = (Math.random() - 0.5) * 12;
-                this.vy = (Math.random() - 0.5) * 12;
-                this.life = 1.0;
-            }
-            update() {
-                this.x += this.vx; this.y += this.vy;
-                this.life -= 0.04;
-            }
-            draw() {
-                ctx.globalAlpha = this.life;
-                ctx.fillStyle = this.color;
-                ctx.fillRect(this.x, this.y, 4, 4);
-                ctx.globalAlpha = 1;
-            }
-        }
-
-        // --- Core Functions ---
-
-        function initGame() {
-            const nameInput = document.getElementById('playerNameInput');
-            if (nameInput.value.trim() === "") {
-                alert("Please enter a name!");
-                return;
-            }
-            playerName = nameInput.value;
-            // Generate Random Nickname
-            playerNickname = nicknameSuffixes[Math.floor(Math.random() * nicknameSuffixes.length)];
-            
-            startGame();
-        }
-
-        function startGame() {
-            document.getElementById('startScreen').classList.add('hidden');
-            document.getElementById('endScreen').classList.add('hidden');
-            
-            score = 0;
-            timeLeft = 180; // 3 Minutes
-            words = [];
-            particles = [];
-            currentInput = "";
-            activeHits = [...rawHits]; // Clone list
-            
-            // Shuffle list
-            activeHits.sort(() => Math.random() - 0.5);
-
-            scoreDisplay.innerText = score;
-            inputDisplay.innerText = "";
-            gameRunning = true;
-            
-            // Start Timer
-            clearInterval(timerInterval);
-            timerInterval = setInterval(updateTimer, 1000);
-            updateTimer(); // Initial call
-
-            animate(0);
-            if(audioCtx.state === 'suspended') audioCtx.resume();
-        }
-
-        function resetGame() {
-            document.getElementById('endScreen').classList.add('hidden');
-            document.getElementById('startScreen').classList.remove('hidden');
-            renderScoreTable('startScoreTable');
-        }
-
-        function updateTimer() {
-            if (!gameRunning) return;
-            timeLeft--;
-            
-            // Format Time 00:00
-            const m = Math.floor(timeLeft / 60);
-            const s = timeLeft % 60;
-            timerDisplay.innerText = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
-
-            // Adjust difficulty based on time
-            if (timeLeft > 120) spawnRate = 2000; // Minute 1
-            else if (timeLeft > 60) spawnRate = 1200; // Minute 2
-            else spawnRate = 800; // Minute 3
-
-            if (timeLeft <= 0) {
-                endGame();
-            }
-        }
-
-        function showFailPopup() {
-            const phrase = failQuotes[Math.floor(Math.random() * failQuotes.length)];
-            popup.innerText = phrase;
-            popup.style.opacity = 1;
-            playSound('fail');
-            setTimeout(() => { popup.style.opacity = 0; }, 1000);
-        }
-
-        function spawnWordPair(timestamp) {
-            if (timestamp - lastSpawn > spawnRate) {
-                if (activeHits.length === 0) {
-                    // Refill if empty, but highly unlikely in 3 mins
-                    activeHits = [...rawHits]; 
-                    activeHits.sort(() => Math.random() - 0.5);
-                }
-
-                const data = activeHits.pop(); // Take one off the stack
-                const pairId = Date.now() + Math.random();
-
-                const w1 = new FloatingWord(data.s, pairId, 'song');
-                const w2 = new FloatingWord(data.a, pairId, 'artist');
-                
-                // Stagger spawn
-                w2.x -= Math.random() * 150; 
-                w2.y = Math.random() * (height * 0.7) + 50;
-
-                words.push(w1, w2);
-                lastSpawn = timestamp;
-            }
-        }
-
-        // --- Interaction ---
-
-        window.addEventListener('keydown', (e) => {
-            if (!gameRunning) return;
-
-            if (e.key === 'Backspace') {
-                if (currentInput.length > 0) {
-                    showFailPopup(); // Funny fail on correction
-                }
-                currentInput = "";
-                inputDisplay.innerText = "";
-                return;
-            }
-
-            if (e.key.length === 1 && !e.ctrlKey) {
-                currentInput += e.key;
-                inputDisplay.innerText = currentInput;
-                playSound('type');
-                checkMatch();
             }
         });
 
-        function checkMatch() {
-            // Find word exactly matching input that isn't already primed
-            const matchIndex = words.findIndex(w => 
-                w.text.toLowerCase() === currentInput.toLowerCase() && !w.isPrimed
-            );
+        // 2. PAGINATION LOGIC
+        const pages = document.querySelectorAll('.page');
+        const totalPagesSpan = document.getElementById('total-pages');
+        const pageNumSpan = document.getElementById('page-num');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
 
-            if (matchIndex !== -1) {
-                const matchedWord = words[matchIndex];
-                matchedWord.isPrimed = true;
-                currentInput = "";
-                inputDisplay.innerText = "";
-                
-                const partnerIndex = words.findIndex(w => 
-                    w.pairId === matchedWord.pairId && w !== matchedWord
-                );
+        let currentPage = 0;
+        const totalPages = pages.length;
 
-                if (partnerIndex !== -1 && words[partnerIndex].isPrimed) {
-                    // COMBO
-                    const partner = words[partnerIndex];
-                    triggerExplosion(matchedWord);
-                    triggerExplosion(partner);
+        // Initialize counters
+        totalPagesSpan.innerText = totalPages;
 
-                    words = words.filter(w => w.pairId !== matchedWord.pairId);
-                    playSound('explode');
-                    score += 10;
-                    scoreDisplay.innerText = score;
-                } else {
-                    playSound('lock');
-                }
-            }
-        }
+        function changePage(direction) {
+            const newIndex = currentPage + direction;
 
-        function triggerExplosion(obj) {
-            const w = ctx.measureText(obj.text).width;
-            const cx = obj.x + w/2;
-            const cy = obj.y - 10;
-            for(let i=0; i<15; i++) {
-                particles.push(new Particle(cx, cy, obj.color));
-            }
-        }
+            // Boundary checks
+            if (newIndex < 0 || newIndex >= totalPages) return;
 
-        // --- Visuals ---
-
-        function drawTree(startX, startY, len, angle, width, color) {
-            ctx.beginPath();
-            ctx.save();
-            ctx.strokeStyle = color;
-            ctx.lineWidth = width;
-            ctx.translate(startX, startY);
-            ctx.rotate(angle * Math.PI / 180);
-            ctx.moveTo(0, 0); ctx.lineTo(0, -len);
-            ctx.stroke();
-
-            if (len < 10) { ctx.restore(); return; }
-
-            if (len < 15) {
-                ctx.fillStyle = "#ff00de";
-                ctx.beginPath();
-                ctx.arc(0, -len, 4, 0, Math.PI*2);
-                ctx.fill();
-            }
-
-            drawTree(0, -len, len * 0.75, angle + 20, width * 0.7, color);
-            drawTree(0, -len, len * 0.75, angle - 20, width * 0.7, color);
-            ctx.restore();
-        }
-
-        function drawSun(progress) {
-            const sunY = height - (height * 0.85 * progress); 
-            const grad = ctx.createLinearGradient(width/2, sunY-100, width/2, sunY+100);
-            grad.addColorStop(0, "yellow");
-            grad.addColorStop(1, "red");
+            // Hide current
+            pages[currentPage].classList.remove('active');
             
-            ctx.fillStyle = grad;
-            ctx.beginPath();
-            ctx.arc(width/2, sunY, 100, 0, Math.PI*2);
-            ctx.fill();
-        }
+            // Show next
+            currentPage = newIndex;
+            pages[currentPage].classList.add('active');
 
-        function animate(timestamp) {
-            if (!gameRunning) return;
-            ctx.clearRect(0, 0, width, height);
-
-            // Background based on Timer (Inverse of TimeLeft)
-            const timeProgress = (180 - timeLeft) / 180;
-            const r = 5 + (60 * timeProgress);
-            const g = 5 + (80 * timeProgress);
-            const b = 15 + (180 * timeProgress);
-            document.body.style.backgroundColor = `rgb(${r},${g},${b})`;
-
-            // Draw Sun based on Time
-            drawSun(timeProgress);
-
-            // Draw Tree based on SCORE (Growth)
-            // Cap growth visually around 400 score
-            const growthFactor = Math.min(score / 400, 1.2); 
-            const treeLen = 50 + (150 * growthFactor);
-            drawTree(width/2, height, treeLen, 0, 16, "#fff");
-
-            spawnWordPair(timestamp);
-
-            // Word Logic
-            for (let i = words.length - 1; i >= 0; i--) {
-                words[i].update();
-                words[i].draw(currentInput);
-                
-                // Remove if off screen and penalize
-                if (words[i].x > width + 50) {
-                    showFailPopup();
-                    // Remove both parts of the pair if one is missed
-                    const pid = words[i].pairId;
-                    words = words.filter(w => w.pairId !== pid);
-                }
-            }
-
-            // Particle Logic
-            particles.forEach((p, i) => {
-                p.update();
-                p.draw();
-                if (p.life <= 0) particles.splice(i, 1);
-            });
-
-            animationId = requestAnimationFrame(animate);
-        }
-
-        function endGame() {
-            gameRunning = false;
-            clearInterval(timerInterval);
-
-            // Save Score
-            saveHighScore(playerName, playerNickname, score);
-
-            // Setup End Screen
-            const winnerQuote = winnerQuotes[Math.floor(Math.random() * winnerQuotes.length)];
-            document.getElementById('winnerText').innerText = winnerQuote;
-            document.getElementById('finalScoreText').innerText = "FINAL SCORE: " + score;
-            document.getElementById('playerIdentityDisplay').innerText = `${playerName} - "${playerNickname}"`;
+            // Update UI
+            pageNumSpan.innerText = currentPage + 1;
             
-            renderScoreTable('endScoreTable');
-            document.getElementById('endScreen').classList.remove('hidden');
+            // Button states
+            prevBtn.disabled = (currentPage === 0);
+            nextBtn.disabled = (currentPage === totalPages - 1);
         }
 
     </script>
