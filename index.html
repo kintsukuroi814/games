@@ -23,7 +23,7 @@
             height: 100%;
             font-family: 'Crimson Text', serif;
             background-color: var(--bg-color);
-            overflow: hidden; /* Prevent scrolling, handle inside book */
+            overflow: hidden;
         }
 
         /* --- LOGIN SCREEN STYLES --- */
@@ -79,7 +79,7 @@
 
         /* --- BOOK STYLES --- */
         #book-wrapper {
-            display: none; /* Hidden by default */
+            display: none;
             height: 100vh;
             display: flex;
             justify-content: center;
@@ -95,8 +95,8 @@
             height: 85vh;
             padding: 40px 60px;
             box-shadow: 
-                inset 20px 0 50px rgba(0,0,0,0.1), /* Spine shadow */
-                10px 10px 30px rgba(0,0,0,0.5);   /* External shadow */
+                inset 20px 0 50px rgba(0,0,0,0.1),
+                10px 10px 30px rgba(0,0,0,0.5);
             border-radius: 5px 15px 15px 5px;
             position: relative;
             overflow: hidden;
@@ -104,19 +104,18 @@
 
         .page-content {
             height: 100%;
-            overflow-y: auto; /* Allow scrolling if page is too long, though we try to paginate */
+            overflow-y: auto;
             color: var(--ink-color);
             font-size: 1.2rem;
             line-height: 1.8;
             text-align: justify;
         }
 
-        /* Hide scrollbar for cleaner look */
         .page-content::-webkit-scrollbar { width: 0; }
         .page-content { -ms-overflow-style: none; scrollbar-width: none; }
 
         .page {
-            display: none; /* Hide all pages initially */
+            display: none;
             animation: fadeIn 0.8s;
         }
 
@@ -124,11 +123,9 @@
             display: block;
         }
 
-        /* Typography details */
         p { margin-bottom: 1.5em; text-indent: 1.5em; }
         p:first-of-type { text-indent: 0; }
         
-        /* Drop cap for the very first letter of the book */
         .page:first-child p:first-child::first-letter {
             font-size: 3.5em;
             float: left;
@@ -143,7 +140,6 @@
             color: #888;
         }
 
-        /* Navigation Controls */
         .controls {
             position: absolute;
             bottom: 20px;
@@ -156,7 +152,7 @@
             font-family: sans-serif;
             font-size: 0.8rem;
             color: #666;
-            pointer-events: none; /* Let clicks pass through to buttons */
+            pointer-events: none;
         }
 
         .btn-nav {
@@ -182,7 +178,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Mobile Adjustments */
         @media (max-width: 600px) {
             .book { padding: 20px 25px; height: 90vh; border-radius: 5px; }
             .page-content { font-size: 1.1rem; }
@@ -205,7 +200,7 @@
     </div>
 
     <!-- BOOK SECTION -->
-    <div id="book-wrapper" style="display: none;"> <!-- Inline style needed for JS toggle -->
+    <div id="book-wrapper">
         <div class="book">
             <div class="page-content" id="content-area">
                 
@@ -387,31 +382,41 @@
     </div>
 
     <script>
-        /* --- IT SECTION: LOGIC --- */
-        
-        // 1. LOGIN LOGIC
+        // SHA-256 HASH OF 'kintsukuroi'
+        const TARGET_HASH = "edf2a22f28c630865a34157482f9971033e23d31d3d2647ccfd9534e666cc33a";
+
         const passwordInput = document.getElementById('password-input');
         const loginOverlay = document.getElementById('login-overlay');
         const bookWrapper = document.getElementById('book-wrapper');
         const errorMsg = document.getElementById('error-msg');
-        const correctPass = "kintsukuroi";
 
-        passwordInput.addEventListener('keyup', function(e) {
+        // Function to calculate SHA-256 using Web Crypto API
+        async function sha256(message) {
+            const msgBuffer = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            return hashHex;
+        }
+
+        passwordInput.addEventListener('keyup', async function(e) {
             if (e.key === 'Enter') {
-                if (this.value.toLowerCase().trim() === correctPass) {
-                    // Success Animation
-                    this.style.borderColor = "#4BB543"; // Green
+                const inputVal = this.value.toLowerCase().trim();
+                const inputHash = await sha256(inputVal);
+
+                if (inputHash === TARGET_HASH) {
+                    // Success
+                    this.style.borderColor = "#4BB543";
                     loginOverlay.style.opacity = "0";
                     setTimeout(() => {
                         loginOverlay.style.display = "none";
-                        bookWrapper.style.display = "flex"; // Make it visible in DOM
-                        // Small timeout to allow the display change to register before opacity transition
+                        bookWrapper.style.display = "flex"; 
                         setTimeout(() => {
                             bookWrapper.style.opacity = "1"; 
                         }, 50);
                     }, 1000);
                 } else {
-                    // Failure Animation
+                    // Failure
                     errorMsg.style.opacity = "1";
                     this.style.borderColor = "#ff4444";
                     setTimeout(() => { errorMsg.style.opacity = "0"; }, 2000);
@@ -419,7 +424,7 @@
             }
         });
 
-        // 2. PAGINATION LOGIC
+        // PAGINATION LOGIC
         const pages = document.querySelectorAll('.page');
         const totalPagesSpan = document.getElementById('total-pages');
         const pageNumSpan = document.getElementById('page-num');
@@ -429,30 +434,18 @@
         let currentPage = 0;
         const totalPages = pages.length;
 
-        // Initialize counters
         totalPagesSpan.innerText = totalPages;
 
         function changePage(direction) {
             const newIndex = currentPage + direction;
-
-            // Boundary checks
             if (newIndex < 0 || newIndex >= totalPages) return;
-
-            // Hide current
             pages[currentPage].classList.remove('active');
-            
-            // Show next
             currentPage = newIndex;
             pages[currentPage].classList.add('active');
-
-            // Update UI
             pageNumSpan.innerText = currentPage + 1;
-            
-            // Button states
             prevBtn.disabled = (currentPage === 0);
             nextBtn.disabled = (currentPage === totalPages - 1);
         }
-
     </script>
 </body>
 </html>
