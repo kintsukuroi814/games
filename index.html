@@ -2,114 +2,595 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Project Kintsukuroi</title>
-    <!-- RESTORED: The elegant serif font for the login page -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 
     <style>
-        /* Apply the book font to the whole body including login */
-        body { 
-            background-color: #000; 
-            color: #c5a059; 
-            font-family: 'Crimson Text', serif; /* Changed back to Serif */
-            margin: 0; 
-            overflow: hidden; 
-            height: 100vh; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
+        :root {
+            --bg-color: #1a1a1a;
+            --paper-color: #f4e4bc;
+            --ink-color: #2b2b2b;
+            --accent-gold: #c5a059;
         }
-        #loader { 
-            text-align: center; 
-            padding: 20px; 
-            width: 100%; 
-            max-width: 450px; 
+
+        * {
+            box-sizing: border-box;
         }
-        input { 
-            background: transparent; 
-            border: none; 
-            border-bottom: 2px solid #c5a059; 
-            color: #fff; 
-            font-size: 1.3rem; 
-            padding: 10px; 
-            outline: none; 
-            text-align: center; 
-            letter-spacing: 3px; 
-            width: 80%; 
-            font-family: 'Courier New', monospace; /* Keeps the "code" feel for input */
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Crimson Text', serif;
+            background-color: #000;
+            overflow: hidden;
+        }
+
+        /* === LOGIN SCREEN === */
+        #login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 1s ease;
+            padding: 20px;
+        }
+
+        .riddle-container {
+            text-align: center;
+            color: var(--accent-gold);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .riddle-text {
+            font-style: italic;
+            line-height: 1.8;
+            font-size: 1.8rem;
+            margin-bottom: 40px;
+            text-shadow: 0 0 10px rgba(197, 160, 89, 0.2);
+        }
+
+        input[type="password"] {
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid var(--accent-gold);
+            color: #fff;
+            font-size: 1.5rem;
+            padding: 15px 10px;
+            outline: none;
+            text-align: center;
+            letter-spacing: 4px;
+            width: 100%;
+            max-width: 400px;
+            font-family: 'Courier New', monospace;
             margin-top: 20px;
         }
-        #error { 
-            color: #ff4444; 
-            margin-top: 15px; 
-            opacity: 0; 
-            transition: opacity 0.3s; 
-            font-size: 1rem; 
+
+        #error-msg {
+            color: #ff4444;
+            margin-top: 20px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 1.2rem;
             font-family: sans-serif;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
         }
-        .riddle { 
-            font-style: italic; 
-            margin-bottom: 20px; 
-            line-height: 1.6; 
-            font-size: 1.4rem; /* Larger, prettier text */
-            text-shadow: 0 0 10px rgba(197, 160, 89, 0.2);
+
+        /* Mobile adjustments for login */
+        @media (max-width: 600px) {
+            .riddle-text {
+                font-size: 1.4rem;
+                line-height: 1.6;
+                margin-bottom: 30px;
+            }
+            
+            input[type="password"] {
+                font-size: 1.3rem;
+                padding: 12px 8px;
+                letter-spacing: 3px;
+            }
+
+            #error-msg {
+                font-size: 1rem;
+            }
+        }
+
+        /* === BOOK DISPLAY === */
+        #book-wrapper {
+            display: none;
+            width: 100%;
+            height: 100vh;
+            background-color: var(--bg-color);
+            opacity: 0;
+            transition: opacity 1.5s ease;
+            padding: 10px;
+            overflow: hidden;
+        }
+
+        #book-wrapper.visible {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .book {
+            background-color: var(--paper-color);
+            width: 100%;
+            max-width: 700px;
+            height: 90vh;
+            padding: 30px 40px 80px 40px;
+            box-shadow: 
+                inset 15px 0 40px rgba(0,0,0,0.1),
+                8px 8px 25px rgba(0,0,0,0.5);
+            border-radius: 5px 12px 12px 5px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .page-content {
+            flex: 1;
+            overflow-y: auto;
+            color: var(--ink-color);
+            font-size: 1.2rem;
+            line-height: 1.8;
+            text-align: justify;
+            padding-right: 10px;
+        }
+
+        .page-content::-webkit-scrollbar { 
+            width: 4px; 
+        }
+        
+        .page-content::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.05);
+        }
+        
+        .page-content::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.2);
+            border-radius: 2px;
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.8s;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        p { 
+            margin-bottom: 1.5em; 
+            text-indent: 1.5em; 
+        }
+        
+        p:first-of-type { 
+            text-indent: 0; 
+        }
+        
+        .page:first-child p:first-child::first-letter {
+            font-size: 3.5em;
+            float: left;
+            line-height: 0.8;
+            margin-right: 0.1em;
+            color: var(--bg-color);
+        }
+
+        .separator {
+            text-align: center;
+            margin: 20px 0;
+            color: #888;
+        }
+
+        /* Navigation Controls */
+        .controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background: linear-gradient(to bottom, rgba(244,228,188,0) 0%, rgba(244,228,188,0.95) 20%);
+            border-radius: 0 0 12px 5px;
+        }
+
+        .page-number {
+            font-size: 1rem;
+            color: #666;
+            font-family: sans-serif;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-nav {
+            cursor: pointer;
+            border: 2px solid #888;
+            background: rgba(255,255,255,0.8);
+            font-family: 'Crimson Text', serif;
+            font-size: 1.1rem;
+            color: #444;
+            padding: 8px 20px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+            touch-action: manipulation;
+        }
+
+        .btn-nav:active {
+            background: rgba(255,255,255,1);
+            transform: scale(0.95);
+        }
+
+        .btn-nav:disabled {
+            color: #ccc;
+            border-color: #ccc;
+            cursor: default;
+            opacity: 0.5;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* === MOBILE OPTIMIZATIONS === */
+        @media (max-width: 600px) {
+            #book-wrapper {
+                padding: 5px;
+            }
+
+            .book {
+                width: 100%;
+                height: 95vh;
+                padding: 20px 15px 70px 15px;
+                border-radius: 3px 8px 8px 3px;
+                box-shadow: 
+                    inset 10px 0 30px rgba(0,0,0,0.08),
+                    5px 5px 15px rgba(0,0,0,0.4);
+            }
+
+            .page-content {
+                font-size: 1.1rem;
+                line-height: 1.7;
+                padding-right: 5px;
+            }
+
+            .page:first-child p:first-child::first-letter {
+                font-size: 2.8em;
+            }
+
+            .controls {
+                padding: 12px 15px;
+                flex-wrap: nowrap;
+            }
+
+            .page-number {
+                font-size: 0.9rem;
+                white-space: nowrap;
+            }
+
+            .nav-buttons {
+                gap: 10px;
+            }
+
+            .btn-nav {
+                font-size: 1rem;
+                padding: 10px 16px;
+                letter-spacing: 1px;
+                min-width: 80px;
+            }
+
+            p {
+                margin-bottom: 1.3em;
+            }
+        }
+
+        /* Extra small screens */
+        @media (max-width: 400px) {
+            .page-content {
+                font-size: 1rem;
+                line-height: 1.6;
+            }
+
+            .btn-nav {
+                font-size: 0.9rem;
+                padding: 8px 12px;
+                min-width: 70px;
+            }
         }
     </style>
 </head>
 <body>
 
-<div id="loader">
-    <div class="riddle">
-        "I am the art of embracing damage.<br>
-        I mend the broken with gold.<br>
-        What is my name?"
+<!-- LOGIN SECTION -->
+<div id="login-overlay">
+    <div class="riddle-container">
+        <div class="riddle-text">
+            "I am the art of embracing damage.<br>
+            I mend the broken with gold.<br>
+            What is my name?"
+        </div>
+        <input type="password" id="pass" placeholder="ENTER KEY" autocomplete="off">
+        <div id="error-msg">ACCESS DENIED</div>
     </div>
-    <input type="password" id="pass" placeholder="ENTER KEY" autocomplete="off">
-    <div id="error">ACCESS DENIED</div>
+</div>
+
+<!-- BOOK SECTION -->
+<div id="book-wrapper">
+    <div class="book">
+        <div class="page-content" id="content-area">
+            
+            <!-- PAGE 1 -->
+            <div class="page active">
+                <p>Serpentine descending down a mountain, military boots grinding along the unpaved road. Currents flow in the background of silence. All operators in position. The plan was simple: destabilize the country, offer them aid, install the operators, and overtake.</p>
+                <p>Some have foreseen this ancient method. That's where our units came into play. We called them platforms. Psychological operations have proven decisive in the past. Rootkits in the subconscious ticked exactly as we wanted them to. Their thoughts below the surface had been planted, reinforced, and used predictably for our purposes. We named them "sleepers." We transformed them into devices capable of executing commands via radio frequency signals. Other triggers included music, photos, and the most effective stimuli—smell.</p>
+                <p>Force and blackmail brought us to a certain level of efficiency, but over time, resistance was better subdued through conditioning and platforms. Almost all entry points—we called them "doors"—were accessed through trust, evoking love, and exploiting the raw tissue of the psyche by inducing individuals or groups into chronic stress and flooding them with information. The goal was to make them susceptible to C programming while strongly distracted by a task. Usually, subjects succumbed to this suggestion within three to five months. Sleep deprivation accelerated the process.</p>
+                <p>We knew the program was active when the subject woke up every night at 3 a.m., dreaming of the structures and triggers we installed. The programs started losing their effect after three months of losing contact with the inductor.</p>
+            </div>
+
+            <!-- PAGE 2 -->
+            <div class="page">
+                <p>Three psychological platforms were commonly used: one labeled "Parent," the second "Adult," and the third "Child"—also called "Ego states." This was a modified version of Eric Berne's transactional analysis, adapted for covert operations by the special units of leading countries and some influential corporations.</p>
+                <p>A priest was used as a vector for triggers. Their training made them resistant to three of the five methods employed. It was my specialty to infiltrate systems. My first goal was to gather intelligence and clear any personal interference.</p>
+                <p>One of our operatives discovered shortly before a mission that both his parents had burned to death in an elderly home. Despite this trauma, his performance was superb, and he maintained his inductor role for another six months. After completing his objective, he was isolated and observed until waves of sorrow and other emotions surfaced. His state served as a model for the X9 unit training. We entered CRISPR tissue and DNA manipulation fused with nano-bio processors. We achieved a collective awareness among units—they operated as a single consciousness.</p>
+                <p>We kept entire units in abandoned Buddhist temples as "sleeper cells." The number of active processes in Europe approached 1,300. Countries had been overtaken from the inside out, working their way from administration to the political core. The populace had long been under the influence of an AI algorithm.</p>
+            </div>
+
+            <!-- PAGE 3 -->
+            <div class="page">
+                <p>There were two rebel groups aware of this movement, one of which was led by the former sleeper. He exhibited an unprecedented level of awareness, with his subconscious more expressed than anything recorded. The firm became aware of him when he was arrested and isolated on charges of forming a sect in a remote mountain village. No one heard from them for three years until members appeared simultaneously in groups of three across 50 capitals worldwide. They simply stood still for exactly twenty-four hours, then disappeared into the crowds like ghosts. Most individuals were unaware of this. No one knew how he managed to synchronize them without technology. He didn't stand out nor cause harm, but his objectives remained unknown.</p>
+                <p>We kept him under observation, and after six days, the guards began believing they were him. They recalled events from his childhood with vivid detail. Highly trained operatives with psy training lasted only nine days before showing signs of a security breach. He recited access keys held by the guards during interrogation—none of them remembered talking with him.</p>
+                <p>"Your use of code is childish. You leave the platforms unguarded. If I can access them in two days, they can do it in under seven hours."</p>
+                <p>"Who are they?"</p>
+                <p><i>He did not respond.</i></p>
+            </div>
+
+            <!-- PAGE 4 -->
+            <div class="page">
+                <p>His use of an invented language—an altered form of neuro-linguistic programming and code-switching—was his signature.</p>
+                <p>He managed to escape from an underground research facility on German soil—an undiscovered Gestapo bunker repurposed for weapons testing and biological experiments. Cameras showed he was accompanied by three guards, walking at exactly the same distance from each other, with him in the middle. He vanished. His team was never identified again.</p>
+                <p class="separator">***</p>
+                <p>All forces led double lives. On one side, we played gods; privately, we concealed this world from ourselves. I often stayed in a beach bar to enjoy normality, knowing I could never fully return once I'd glimpsed the other side. None of us understood the depths of our applications—that was the true thrill.</p>
+                <p>Before me stood a pint of beer with a generous pour. Behind it, the girl working as the bartender looked at me with concern.</p>
+                <p>"It's well over the line," I said appreciatively. I made her laugh. She was the boss's daughter, recently finished high school and entering a new chapter. I noticed her distant awareness of her role as a bartender. You can always tell who was cut out for something "more" in their lives.</p>
+            </div>
+
+            <!-- PAGE 5 -->
+            <div class="page">
+                <p>I recalled my years bartending—studying after shifts, using the coffee machine and restaurant kitchens to make snacks late at night. I often talked with guests long after closing, learning valuable information about their work. They tended to open up at the bar.</p>
+                <p>The girl's jeans were dangerously short. Her golden, curly hair stood out like a rebellious statement. I always had a thing for female bartenders.</p>
+                <p>One morning, I woke up under the bar with a glass of water and a note beside me. It read, "My shift was over. Call me when you wake up." I messaged her the next afternoon—thanking her for the water and avoiding calling security. Getting wasted like that would cause problems at work.</p>
+                <p>Her name was Natalia. I visited the bar after a week and learned she had quit.</p>
+                <p>Next mission wasn't scheduled, and none of us knew the exact timing of deployment.</p>
+                <p>That evening, I walked home for an hour to clear my mind. I noticed an unanswered call and a message just before arriving at the agency-managed apartment:</p>
+                <p><strong>"Can I see you today? It's urgent."</strong></p>
+            </div>
+            
+            <!-- PAGE 6 -->
+            <div class="page">
+                <p><i>I'd never had this kind of relationship with her, but it was as if she knew no introductions were necessary. I replied, "Yeah, come on over."</i></p>
+                <p>"You should stop mixing tequila with beer; you're not the type."</p>
+                <p>"What type do I strike you as?"</p>
+                <p>"Sober, gentle. Sipping the heavy surface of red wine."</p>
+                <p>"I like the Irish pub. You have good beer."</p>
+                <p>"You and I both know the beer is below average. You fell in love with me. You're easy to read."</p>
+                <p><i>I was stunned at how obvious everything had become.</i></p>
+                <p>"I may have killed a man. He's still lying in the hallway, bleeding from his head. He wasn't moving when I left. I don't know what to do."</p>
+                <p>"How? Why? How did you..."</p>
+                <p>"I'm kidding. Just wanted to see how you'd react. There's a small meeting today with my roommate. Want to meet her?"</p>
+                <p>"I barely know you," I replied, laughing.</p>
+                <p>"It'll be fun, I promise," she smiled.</p>
+            </div>
+
+            <!-- PAGE 7 -->
+            <div class="page">
+                <p><i>Her long legs drew me deeper into the night, but I hesitated. The situation felt awkward.</i></p>
+                <p>"I know you better than you think, Kint. Don't be afraid. Besides, we already slept together that night you passed out at the bar. You were nailing me on the counter. I haven't been fucked that well in ages. You kept talking some weird numbers before blacking out. Anyway, I wrote my number so it would be easier."</p>
+                <p><i>I laughed, realizing she was telling the truth.</i></p>
+                <p>"Tequila and beer aren't my poison, you say... fuck."</p>
+                <p><i>She lit a cigarette and sent a message to her roommate. The smoke drifted, breaking the shadows of my room.</i></p>
+                <p>"What are you doing? I'll have to decline. I have work in the morning."</p>
+                <p>"No, you don't. I know what you do. But that's irrelevant now."</p>
+                <p><i>I was curious—what did she think she knew about me and my career?</i></p>
+                <p>"You had him locked up in your facility for eight days. At least, that's what you believed. He wasn't locked up; he wasn't even there."</p>
+            </div>
+
+            <!-- PAGE 8 -->
+            <div class="page">
+                <p><i>I pulled out my firearm and pressed her against the wall. "Start talking!"</i></p>
+                <p><i>She kissed me and grabbed my crotch so hard I almost splattered her brains on the wall.</i></p>
+                <p>"I am the new recruit. Security clearance is Aurora-7."</p>
+                <p>"I gathered vital information on the movement. But you'll have to fuck it out of me," <i>she said daringly.</i> "My roommate will be here soon."</p>
+                <p>"Is Natalie your name?"</p>
+                <p><i>It was a stupid question; operatives never used real names—they had codes.</i></p>
+                <p>"We have an update on Cologne. The squad followed through with the procedure. However, we believe Kint acted out of plan."</p>
+                <p>"How come you were briefed on this as a recruit?"</p>
+                <p>"It's standard protocol to check for potential loose ends. But you're right—he's a legend among the ranks. I've never met him personally. Are you close?"</p>
+                <p>"We did some work together. I haven't heard from him in almost a year. I knew it was only a matter of time before he lost track."</p>
+            </div>
+            
+            <!-- PAGE 9 -->
+            <div class="page">
+                <p>"We need to contain the damage. We need your assessment of what he's capable of."</p>
+                <p>"So, new blood replaces the old dogs, and you want me to rat him out? That's not the code. Listen, someone will be behind your back sooner or later. Would you want that person guarding yours? It's not the code."</p>
+                <p>"She's here."</p>
+                <p><i>A formal-looking middle-aged woman appeared at the door. Her perfectly trimmed hair suggested strictness, but her first smile shattered that assumption.</i></p>
+                <p>"God, I hate this cover—a fucking librarian again. Hmm, you're cute. Don't worry. Natalie was joking about the sex part. I'm happily married with children, and Natalie just had her fun. Her specialty, actually. She gathers good data. I'm Rosemarie—you can call me Rose."</p>
+                <p><i>She shook my hand and asked for a glass of wine. As I poured, I glimpsed her undressing her top and bra to remove some wearable electronics. I also noticed scars on her skin—probably the communication mods. An incredibly attractive being. Natalie laid back on the couch, lit another cigarette, and began updating Rose on the Cologne operation.</i></p>
+            </div>
+
+            <!-- PAGE 10 -->
+            <div class="page">
+                <p>I had two chilled wine glasses in the fridge and a bottle of Casillero del Diablo. I opened a beer for myself and set out some finger food.</p>
+                <p>Natalie managed to perform a penetration test on my laptop while I was in the kitchen.</p>
+                <p>"You need to be more careful with your credentials. I pinged you and received way more data than intended. Why aren't you using the company hardware?"</p>
+                <p>"It's my personal laptop; the operative one is offline in my backpack."</p>
+                <p>"That's a security risk. Do you remember the '97 attack on the company? Forensics revealed a leak from an operator's personal laptop."</p>
+                <p>"It was a coordinated inside job with an inside man. We suspect Kint," Rose added.</p>
+                <p>I felt the condensed frost from the beer bottle on my fingertips. Somehow, it seemed to be getting colder. Both women looked at me, as if scanning the back of my retina for a corpus delicti.</p>
+                <p>"Let's get this show on the road. Cheers, ladies!"</p>
+            </div>
+
+            <!-- PAGE 11 -->
+            <div class="page">
+                <p><i>They exchanged glances while sipping wine. I could tell they were unsure if I would cooperate.</i></p>
+                <p>"Kint is just like all of us—gifted in some field, with a difficult past. Events in his life defied all prediction models. Some even called him a prophet. He could sense events before they happened, and this preternatural awareness saved his neck on many missions. However, predicting women proved difficult—that's where I came in."</p>
+                <p><i>Natalie chuckled; Rose shot her a look.</i></p>
+                <p>"I mean, I could often tell what they had in mind. I'm not a mind reader, though."</p>
+                <p>"Would you describe him as a sadist?" Rose asked softly.</p>
+                <p>"He wasn't exactly a sadist, but I've seen what he's capable of. He didn't enjoy doing those things, but his performance was an art form."</p>
+                <p>"I see… Natalie, please," Rose said calmly.</p>
+                <p><i>Natalie slowly set her gadgets aside, sipped her wine, and let her fingers drift over Rose's shoulder as she moved closer to me.</i></p>
+            </div>
+            
+            <!-- PAGE 12 -->
+            <div class="page">
+                <p>"What do you think you're doing?"</p>
+                <p>"Just what we're good at. Relax. Be honest," Rose explained.</p>
+                <p><i>Natalie lifted her skirt halfway, revealing the tips of her breasts as she kneeled. I let her unzip my pants, and she eagerly went at it as if waiting for this moment for a year. Her tongue rolled around the tip, and I was instantly turned on. I grabbed her hair and pulled her closer.</i></p>
+                <p>"No. She's in charge," Rose said, as if reading my mind.</p>
+                <p>"What is this?"</p>
+                <p>"We need to extract some information from you," Natalie replied with a sly smile.</p>
+                <p><i>Rose began undressing herself as if she had all the time in the world, kissing Natalie's neck and trying not to disturb her pleasure. Rose's lips moved to mine, and she licked my upper lip to tease me.</i></p>
+                <p>"Aren't you happily married?"</p>
+                <p>"Now you know why," I replied.</p>
+            </div>
+
+            <!-- PAGE 13 -->
+            <div class="page">
+                <p><i>Natalie slipped Rose onto my erect penis and held her in her arms as she slowly rode me. They kissed passionately, as if lovers who hadn't seen each other in months. I pulled both of them closer.</i></p>
+                <p class="separator">***</p>
+                <p><i>We woke up wrapped in each other's arms, a warm blanket shielding us from the outside world. Rose was still beneath the blanket. Somehow, they had invited themselves back to enjoy me again. Natalie caressed her neck, playing with herself—still staring directly into my eyes.</i></p>
+                <p><i>In all my years of service, I'd never experienced anything like this. I came so hard I felt dizzy. I fell asleep quickly after. When I woke, a croissant, orange juice, and a pot of coffee awaited on a tray on the table. They were gone without a trace. I looked around, questioning if it was even real. The wine was half drunk, as were the beers. I lit a cigarette and took a bite of the croissant. Under the coffee cup, I found a small note, like one from a fortune cookie. It read: "Rosebud." It was Kint.</i></p>
+            </div>
+
+            <!-- PAGE 14 -->
+            <div class="page">
+                <p><i>"Rosebud" was the codename for the operation that cleared a hospital in Russia. Today marked exactly ten years since it happened. For a moment, I felt sorrow. Many civilians had lost their lives that night as collateral damage. Kint had saved two operatives from bleeding out. I was, thankfully, unharmed physically, but the nightmares persisted long afterward. It was one of those jobs. Fuck, I can't believe he remembered. He even gave the recruits the clearance number—typical Kint.</i></p>
+                <p><i>Nobody ever discovered what part of his training he'd undergone. Rumor has it he fought his personal demons for a long time before joining the forces. He botched his first mission, lost a female operative, and descended into madness. Nobody heard from him for three years. He was seen on a mountain top, rescued by local climbers. They reported he was dehydrated, delusional, with an obvious intent to end his life there. After that incident, he began developing his artistic side—music and intensive therapy helped revive what was left of him.</i></p>
+            </div>
+
+            <!-- PAGE 15 -->
+            <div class="page">
+                <p><i>After recovery, he fell in love. A calmness accompanied him from that moment. I didn't recognize him at first; he was later promoted into cyber units and the quick response division—stepping stones to the psy squad and logistics. No one has seen him since.</i></p>
+                <p><i>It seems he knows what everyone in the firm is doing—something like a patron with a dark past. His trademark was often changing camouflage and moving swiftly between different circles. His wife described him as a Greek god Hermes—living between worlds of life and death, appearing wherever he was needed most.</i></p>
+                <p><i>The Cologne mission was staged. All "victims" on board were our new recruits—they played dead with state-of-the-art effects. The footage was used as leverage to expose the underground hierarchy.</i></p>
+            </div>
+
+            <!-- PAGE 16 -->
+            <div class="page">
+                <p><i>Music from R.E.M. played through the vinyl record in a rustic teahouse. A Luger was loaded, waiting to fire. People started falling from their seats upon noticing the gun. The mask covered my face. The 70-year-old son of Reich's security official looked me sharply in the eyes before being eliminated—two bullets in his torso, one in his neck, and four in his head. I removed the last bullet from the barrel as a reminder of a job well done. Witnesses shrank back in fear. I heard screams as I left the café. Heavy rain began falling as I slipped into a side alley. It felt cleansing. I entered the church—a good place to gather my thoughts for a report. A priest appeared beside me as I reflected on the event.</i></p>
+                <p>"You did well, my son. The passage is under the altar. Evac-team and new ID are waiting on the other side. Did you keep the last bullet?"</p>
+                <p>"Of course, Father."</p>
+                <p>"Godspeed."</p>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="page-number">
+                <span id="page-num">1</span> / <span id="total-pages">16</span>
+            </div>
+            <div class="nav-buttons">
+                <button class="btn-nav" id="prev-btn" disabled>Prev</button>
+                <button class="btn-nav" id="next-btn">Next</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
-    // The "scrambled" data below is actually the entire book HTML, Base64 encoded.
-    // It is completely unreadable in View Source.
-    const _0x4a1b = "PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVuIj4KPGhlYWQ+CiAgICA8bWV0YSBjaGFyc2V0PSJVVEYtOCI+CiAgICA8bWV0YSBuYW1lPSJ2aWV3cG9ydCIgY29udGVudD0id2lkdGg9ZGV2aWNlLXdpZHRoLCBpbml0aWFsLXNjYWxlPTEuMCI+CiAgICA8bGluayBocmVmPSJodHRwczovL2ZvbnRzLmdvb2dsZWFwaXMuY29tL2NzczI/ZmFtaWx5PUNyaW1zb24rVGV4dDppdGFsLHdnaHRAMCw0MDA7MCw2MDA7MSw0MDAmZGlzcGxheT1zd2FwIiByZWw9InN0eWxlc2hlZXQiPgogICAgPHN0eWxlPgogICAgICAgIDpyb290IHsKICAgICAgICAgICAgLS1iZy1jb2xvcjogIzFhMWExYTsKICAgICAgICAgICAgLS1wYXBlci1jb2xvcjogI2Y0ZTRiYzsKICAgICAgICAgICAgLS1pbmstY29sb3I6ICMyYjJiMmI7CiAgICAgICAgICAgIC0tYWNjZW50LWdvbGQ6ICNjNWEwNTk7CiAgICAgICAgfQoKICAgICAgICBib2R5LCBodG1sIHsKICAgICAgICAgICAgbWFyZ2luOiAwOwogICAgICAgICAgICBwYWRkaW5nOiAwOwogICAgICAgICAgICBoZWlnaHQ6IDEwMCU7CiAgICAgICAgICAgIGZvbnQtZmFtaWx5OiAnQ3JpbXNvbiBUZXh0Jywgc2VyaWY7CiAgICAgICAgICAgIGJhY2tncm91bmQtY29sb3I6IHZhcigtLWJnLWNvbG9yKTsKICAgICAgICAgICAgb3ZlcmZsb3c6IGhpZGRlbjsKICAgICAgICB9CgogICAgICAgIC8qIEJPT0sgQ09OVEFJTkVSICovCiAgICAgICAgI2Jvb2std3JhcHBlciB7CiAgICAgICAgICAgIGRpc3BsYXk6IGZsZXg7CiAgICAgICAgICAgIGhlaWdodDogMTAwdmg7CiAgICAgICAgICAgIGp1c3RpZnktY29udGVudDogY2VudGVyOwogICAgICAgICAgICBhbGlnbi1pdGVtczogY2VudGVyOwogICAgICAgICAgICBhbmltYXRpb246IGZhZGVJbiAycyBlYXNlOwogICAgICAgIH0KCiAgICAgICAgLmJvb2sgewogICAgICAgICAgICBiYWNrZ3JvdW5kLWNvbG9yOiB2YXIoLS1wYXBlci1jb2xvcik7CiAgICAgICAgICAgIHdpZHRoOiA5MCU7CiAgICAgICAgICAgIG1heC13aWR0aDogNzAwcHg7CiAgICAgICAgICAgIGhlaWdodDogODV2aDsKICAgICAgICAgICAgcGFkZGluZzogNDBweCA2MHB4OwogICAgICAgICAgICBib3gtc2hhZG93OiAKICAgICAgICAgICAgICAgIGluc2V0IDIwcHAgMCA1MHB4IHJnYmEoMCwwLDAsMC4xKSwKICAgICAgICAgICAgICAgIDEwcHAgMTBweCAzMHB4IHJnYmEoMCwwLDAsMC41KTsKICAgICAgICAgICAgYm9yZGVyLXJhZGl1czogNXB4IDE1cHggMTVweCA1cHg7CiAgICAgICAgICAgIHBvc2l0aW9uOiByZWxhdGl2ZTsKICAgICAgICAgICAgb3ZlcmZsb3c6IGhpZGRlbjsKICAgICAgICAgICAgZGlzcGxheTogZmxleDsKICAgICAgICAgICAgZmxleC1kaXJlY3Rpb246IGNvbHVtbjsKICAgICAgICB9CgogICAgICAgIC8qIE1vYmlsZSBBZGp1c3RtZW50cyAqLwogICAgICAgIEBtZWRpYSAobWF4LXdpZHRoOiA2MDBweCkgewogICAgICAgICAgICAuYm9vayB7CiAgICAgICAgICAgICAgICB3aWR0aDogOTUlOwogICAgICAgICAgICAgICAgaGVpZ2h0OiA5MnZoOwogICAgICAgICAgICAgICAgcGFkZGluZzogMjBweCAyNXB4IDYwcHggMjVweDsgLyogRXh0cmEgYm90dG9tIHBhZGRpbmcgZm9yIGJ1dHRvbnMgKi8KICAgICAgICAgICAgICAgIGJvcmRlci1yYWRpdXM6IDNweCA1cHggNXB4IDNweDsKICAgICAgICAgICAgfQogICAgICAgICAgICAucGFnZS1jb250ZW50IHsKICAgICAgICAgICAgICAgIGZvbnQtc2l6ZTogMS4xcmVtICFpbXBvcnRhbnQ7CiAgICAgICAgICAgICAgICBsaW5lLWhlaWdodDogMS42ICFpbXBvcnRhbnQ7CiAgICAgICAgICAgIH0KICAgICAgICAgICAgLmNvbnRyb2xzIHsKICAgICAgICAgICAgICAgIHBhZGRpbmc6IDEwcHggMjBweCAhaW1wb3J0YW50OwogICAgICAgICAgICAgICAgYm90dG9tOiAxMHB4ICFpbXBvcnRhbnQ7CiAgICAgICAgICAgIH0KICAgICAgICAgICAgLmJ0bi1uYXYgewogICAgICAgICAgICAgICAgZm9udC1zaXplOiAxLjJremVtICFpbXBvcnRhbnQ7CiAgICAgICAgICAgICAgICBwYWRkaW5nOiAxMHB4IDE1cHggIWltcG9ydGFudDsKICAgICAgICAgICAgfQogICAgICAgIH0KCiAgICAgICAgLnBhZ2UtY29udGVudCB7CiAgICAgICAgICAgIGZsZXg6IDE7CiAgICAgICAgICAgIG92ZXJmbG93LXk6IGF1dG87CiAgICAgICAgICAgIGNvbG9yOiB2YXIoLS1pbmstY29sb3IpOwogICAgICAgICAgICBmb250LXNpemU6IDEuMnJlbTsKICAgICAgICAgICAgbGluZS1oZWlnaHQ6IDEuODsKICAgICAgICAgICAgdGV4dC1hbGlnbjoganVzdGlmeTsKICAgICAgICB9CgogICAgICAgIC8qIEhpZGUgc2Nyb2xsYmFyICovCiAgICAgICAgLnBhZ2UtY29udGVudDo6LXdlYmtpdC1zY3JvbGxiYXIgeyB3aWR0aDogMDsgfQogICAgICAgIC5wYWdlLWNvbnRlbnQgeyAtbXMtb3ZlcmZsb3ctc3R5bGU6IG5vbmU7IHNjcm9sbGJhci13aWR0aDogbm9uZTsgfQoKICAgICAgICAucGFnZSB7CiAgICAgICAgICAgIGRpc3BsYXk6IG5vbmU7CiAgICAgICAgICAgIGFuaW1hdGlvbjogZmFkZUluIDAuOHM7CiAgICAgICAgfQoKICAgICAgICAucGFnZS5hY3RpdmUgewogICAgICAgICAgICBkaXNwbGF5OiBibG9jazsKICAgICAgICB9CgogICAgICAgIHAgeyBtYXJnaW4tYm90dG9tOiAxLjVlbTsgdGV4dC1pbmRlbnQ6IDEuNWVtOyB9CiAgICAgICAgcDpmaXJzdC1vZi10eXBlIHsgdGV4dC1pbmRlbnQ6IDA7IH0KICAgICAgICAKICAgICAgICAucGFnZTpmaXJzdC1jaGlsZCBwOmZpcnN0LWNoaWxkOjpmaXJzdC1sZXR0ZXIgewogICAgICAgICAgICBmb250LXNpemU6IDMuNWVtOwogICAgICAgICAgICBmbG9hdDogbGVmdDsKICAgICAgICAgICAgbGluZS1oZWlnaHQ6IDAuODsKICAgICAgICAgICAgbWFyZ2luLXJpZ2h0OiAwLjFlbTsKICAgICAgICAgICAgY29sb3I6IHZhcigtLWJnLWNvbG9yKTsKICAgICAgICB9CgogICAgICAgIC5zZXBhcmF0b3IgewogICAgICAgICAgICB0ZXh0LWFsaWduOiBjZW50ZXI7CiAgICAgICAgICAgIG1hcmdpbjogMjBweCAwOwogICAgICAgICAgICBjb2xvcjogIzg4ODsKICAgICAgICB9CgogICAgICAgIC5jb250cm9scyB7CiAgICAgICAgICAgIHBvc2l0aW9uOiBhYnNvbHV0ZTsKICAgICAgICAgICAgYm90dG9tOiAyMHB4OwogICAgICAgICAgICBsZWZ0OiAwOwogICAgICAgICAgICB3aWR0aDogMTAwJTsKICAgICAgICAgICAgZGlzcGxheTogZmxleDsKICAgICAgICAgICAganVzdGlmeS1jb250ZW50OiBzcGFjZS1iZXR3ZWVuOwogICAgICAgICAgICBwYWRkaW5nOiAwIDQwcHg7CiAgICAgICAgICAgIGJveC1zaXppbmc6IGJvcmRlci1ib3g7CiAgICAgICAgICAgIGZvbnQtZmFtaWx5OiBzYW5zLXNlcmlmOwogICAgICAgICAgICBmb250LXNpemU6IDAuOHJlbTsKICAgICAgICAgICAgY29sb3I6ICM2NjY7CiAgICAgICAgICAgIGJhY2tncm91bmQ6IGxpbmVhci1ncmFkaWVudCh0byBib3R0b20sIHJnYmEoMjQ0LDIyOCwxODgsMCkgMCUsIHJnYmEoMjQ0LDIyOCwxODgsMC45KSAyMCUpOwogICAgICAgICAgICBwYWRkaW5nLXRvcDogMTVweDsKICAgICAgICB9CgogICAgICAgIC5idG4tbmF2IHsKICAgICAgICAgICAgY3Vyc29yOiBwb2ludGVyOwogICAgICAgICAgICBib3JkZXI6IG5vbmU7CiAgICAgICAgICAgIGJhY2tncm91bmQ6IG5vbmU7CiAgICAgICAgICAgIGZvbnQtZmFtaWx5OiAnQ3JpbXNvbiBUZXh0Jywgc2VyaWY7CiAgICAgICAgICAgIGZvbnQtc2l6ZTogMS4xcmVtOwogICAgICAgICAgICBjb2xvcjogIzQ0NDsKICAgICAgICAgICAgdHJhbnNpdGlvbjogY29sb3IgMC4zczsKICAgICAgICAgICAgdGV4dC10cmFuc2Zvcm06IHVwcGVyY2FzZTsKICAgICAgICAgICAgbGV0dGVyLXNwYWNpbmc6IDJweDsKICAgICAgICB9CgogICAgICAgIC5idG4tbmF2OmhvdmVyIHsgY29sb3I6ICMwMDA7IGZvbnQtd2VpZ2h0OiBib2xkOyB9CiAgICAgICAgLmJ0bi1uYXY6ZGlzYWJsZWQgeyBjb2xvcjogI2NjYzsgY3Vyc29yOiBkZWZhdWx0OyB9CgogICAgICAgIC5wYWdlLW51bWJlciB7IGFsaWduLXNlbGY6IGNlbnRlcjsgfQoKICAgICAgICBAa2V5ZnJhbWVzIGZhZGVJbiB7CiAgICAgICAgICAgIGZyb20geyBvcGFjaXR5OiAwOyB0cmFuc2Zvcm06IHRyYW5zbGF0ZVkoMTBweCk7IH0KICAgICAgICAgICAgdG8geyBvcGFjaXR5OiAxOyB0cmFuc2Zvcm06IHRyYW5zbGF0ZVkoMCk7IH0KICAgICAgICB9CiAgICA8L3N0eWxlPgo8L2hlYWQ+Cjxib2R5PgogICAgPGRpdiBpZD0iYm9vay13cmFwcGVyIj4KICAgICAgICA8ZGl2IGNsYXNzPSJib29rIj4KICAgICAgICAgICAgPGRpdiBjbGFzcz0icGFnZS1jb250ZW50IiBpZD0iY29udGVudC1hcmVhIj4KICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgPCEtLSBQQUdFIDEgLS0+CiAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzPSJwYWdlIGFjdGl2ZSI+CiAgICAgICAgICAgICAg      ICAgICAgPHA+U2VycGVudGluZSBkZXNjZW5kaW5nIGRvd24gYSBtb3VudGFpbiwgbWlsaXRhcnkgYm9vdHMgZ3JpbmRpbmcgYWxvbmcgdGhlIHVucGF2ZWQgcm9hZC4gQ3VycmVudHMgZmxvdyBpbiB0aGUgYmFja2dyb3VuZCBvZiBzaWxlbmNlLiBBbGwgb3BlcmF0b3JzIGluIHBvc2l0aW9uLiBUaGUgcGxhbiB3YXMgc2ltcGxlOiBkZXN0YWJpbGl6ZSB0aGUgY291bnRyeSwgb2ZmZXIgdGhlbSBhaWQsIGluc3RhbGwgdGhlIG9wZXJhdG9ycywgYW5kIG92ZXJ0YWtlLjwvcD4KICAgICAgICAgICAgICAg     ICAgICA8cD5Tb21lIGhhdmUgZm9yZXNlZW4gdGhpcyBhbmNpZW50IG1ldGhvZC4gVGhhdOKAmXMgd2hlcmUgb3VyIHVuaXRzIGNhbWUgaW50byBwbGF5LiBXZSBjYWxsZWQgdGhlbSBwbGF0Zm9ybXMuIFBzeWNob2xvZ2ljYWwgb3BlcmF0aW9ucyBoYXZlIHByb3ZlbiBkZWNpc2l2ZSBpbiB0aGUgcGFzdC4gUm9vdGtpdHMgaW4gdGhlIHN1YmNvbnNjaW91cyB0aWNrZWQgZXhhY3RseSBhcyB3ZSB3YW50ZWQgdGhlbSB0by4gVGhlaXIgdGhvdWdodHMgYmVsb3cgdGhlIHN1cmZhY2UgaGFkIGJlZW4gcGxhbnRlZCwgcmVpbmZvcmNlZCwgYW5kIHVzZWQgcHJlZGljdGFibHkgZm9yIG91ciBwdXJwb3Nlcy4gV2UgbmFtZWQgdGhlbSDigJxzbGVlcGVycy7igJ0gV2UgdHJhbnNmb3JtZWQgdGhlbSBpbnRvIGRldmljZXMgY2FwYWJsZSBvZiBleGVjdXRpbmcgY29tbWFuZHMgdmlhIHJhZGlvIGZyZXF1ZW5jeSBzaWduYWxzLiBPdGhlciB0cmlnZ2VycyBpbmNsdWRlZCBtdXNpYywgcGhvdG9zLCBhbmQgdGhlIG1vc3QgZWZmZWN0aXZlIHN0aW11bGnigJRzbWVsbC48L3A+CiAgICAgICAgICAgICAg      ICAgICAgPHA+Rm9yY2UgYW5kIGJsYWNrbWFpbCBicm91Z2h0IHVzIHRvIGEgY2VydGFpbiBsZXZlbCBvZiBlZmZpY2llbmN5LCBidXQgb3ZlciB0aW1lLCByZXNpc3RhbmNlIHdhcyBiZXR0ZXIgc3ViZHVlZCB0aHJvdWdoIGNvbmRpdGlvbmluZyBhbmQgcGxhdGZvcm1zLiBBbG1vc3QgYWxsIGVudHJ5IHBvaW50c+KAlHdlIGNhbGxlZCB0aGVtIOKAnGRvb3Jz4oCd4oCUd2VyZSBhY2Nlc3NlZCB0aHJvdWdoIHRydXN0LCBldm9raW5nIGxvdmUsIGFuZCBleHBsb2l0aW5nIHRoZSByYXcgdGlzc3VlIG9mIHRoZSBwc3ljaGUgYnkgaW5kdWNpbmcgaW5kaXZpZHVhbHMgb3IgZ3JvdXBzIGludG8gY2hyb25pYyBzdHJlc3MgYW5kIGZsb29kaW5nIHRoZW0gd2l0aCBpbmZvcm1hdGlvbi4gVGhlIGdvYWwgd2FzIHRvIG1ha2UgdGhlbSBzdXNjZXB0aWJsZSB0byBDIHByb2dyYW1taW5nIHdoaWxlIHN0cm9uZ2x5IGRpc3RyYWN0ZWQgYnkgYSB0YXNrLiBVc3VhbGx5LCBzdWJqZWN0cyBzdWNjdW1iZWQgdG8gdGhpcyBzdWdnZXN0aW9uIHdpdGhpbiB0aHJlZSB0byBmaXZlIG1vbnRocy4gU2xlZXAgZGVwcml2YXRpb24gYWNjZWxlcmF0ZWQgdGhlIHByb2Nlc3MuPC9wPgogICAgICAgICAgICAgICAgICAgIDxwPldlIGtuZXcgdGhlIHByb2dyYW0gd2FzIGFjdGl2ZSB3aGVuIHRoZSBzdWJqZWN0IHdva2UgdXAgZXZlcnkgbmlnaHQgYXQgMyBhLm0uLCBkcmVhbWluZyBvZiB0aGUgc3RydWN0dXJlcyBhbmQgdHJpZ2dlcnMgd2UgaW5zdGFsbGVkLiBUaGUgcHJvZ3JhbXMgc3RhcnRlZCBsb3NpbmcgdGhlaXIgZWZmZWN0IGFmdGVyIHRocmVlIG1vbnRocyBvZiBsb3NpbmcgY29udGFjdCB3aXRoIHRoZSBpbmR1Y3Rvci48L3A+CiAgICAgICAgICAgICAgICA8L2Rpdj4KCiAgICAgICAgICAgICAgICA8IS0tIFBBR0UgMiAtLT4KICAgICAgICAgICAgICAgIDxkaXYgY2xhc3M9InBhZ2UiPgogICAgICAgICAgICAgICAgICAgIDxwPlRocmVlIHBzeWNob2xvZ2ljYWwgcGxhdGZvcm1zIHdlcmUgY29tbW9ubHkgdXNlZDogb25lIGxhYmVsZWQg4oCcUGFyZW50LOKAnSB0aGUgc2Vjb25kIOKAnEFkdWx0LOKAnSBhbmQgdGhlIHRoaXJkIOKAnENoaWxk4oCd4oCUYWxzbyBjYWxsZWQg4oCcRWdvIHN0YXRlcy7igJ0gVGhpcyB3YXMgYSBtb2RpZmllZCB2ZXJzaW9uIG9mIEVyaWMgQmVybmXigJlzIHRyYW5zYWN0aW9uYWwgYW5hbHlzaXMsIGFkYXB0ZWQgZm9yIGNvdmVydCBvcGVyYXRpb25zIGJ5IHRoZSBzcGVjaWFsIHVuaXRzIG9mIGxlYWRpbmcgY291bnRyaWVzIGFuZCBzb21lIGluZmx1ZW50aWFsIGNvcnBvcmF0aW9ucy48L3A+CiAgICAgICAgICAgICAgICAgAgIDxwPkEgcHJpZXN0IHdhcyB1c2VkIGFzIGEgdmVjdG9yIGZvciB0cmlnZ2Vycy4gVGhlaXIgdHJhaW5pbmcgbWFkZSB0aGVtIHJlc2lzdGFudCB0byB0aHJlZSBvZiB0aGUgZml2ZSBtZXRob2RzIGVtcGxveWVkLiBJdCB3YXMgbXkgc3BlY2lhbHR5IHRvIGluZmlsdHJhdGUgc3lzdGVtcy4gTXkgZmlyc3QgZ29hbCB3YXMgdG8gZ2F0aGVyIGludGVsbGlnZW5jZSBhbmQgY2xlYXIgYW55IHBlcnNvbmFsIGludGVyZmVyZW5jZS48L3A+CiAgICAgICAgICAgICAgICAgAgIDxwPk9uZSBvZiBvdXIgb3BlcmF0aXZlcyBkaXNjb3ZlcmVkIHNob3J0bHkgYmVmb3JlIGEgbWlzc2lvbiB0aGF0IGJvdGggaGlzIHBhcmVudHMgaGFkIGJ1cm5lZCB0byBkZWF0aCBpbiBhbiBlbGRlcmx5IGhvbWUuIERlc3BpdGUgdGhpcyB0cmF1bWEsIGhpcyBwZXJmb3JtYW5jZSB3YXMgc3VwZXJiLCBhbmQgaGUgbWFpbnRhaW5lZCBoaXMgaW5kdWN0b3Igcm9sZSBmb3IgYW5vdGhlciBzaXggbW9udGhzLiBBZnRlciBjb21wbGV0aW5nIGhpcyBvYmplY3RpdmUsIGhlIHdhcyBpc29sYXRlZCBhbmQgb2JzZXJ2ZWQgdW50aWwgd2F2ZXMgb2Ygc29ycm93IGFuZCBvdGhlciBlbW90aW9ucyBzdXJmYWNlZC4gSGlzIHN0YXRlIHNlcnZlZCBhcyBhIG1vZGVsIGZvciB0aGUgWDkgdW5pdCB0cmFpbmluZy4gV2UgZW50ZXJlZCBDUklTQlIgdGlzc3VlIGFuZCBETkEgbWFuaXB1bGF0aW9uIGZ1c2VkIHdpdGggbmFuby1iaW8gcHJvY2Vzc29ycy4gV2UgYWNoaWV2ZWQgYSBjb2xsZWN0aXZlIGF3YXJlbmVzcyBhbW9uZyB1bml0c+KAlHRoZXkgb3BlcmF0ZWQgYXMgYSBzaW5nbGUgY29uc2Npb3VzbmVzcy48L3A+CiAgICAgICAgICAgICAgICAgAgIDxwPldlIGtlcHQgZW50aXJlIHVuaXRzIGluIGFiYW5kb25lZCBCdWRkaGlzdCB0ZW1wbGVzIGFzIOKAnHNsZWVwZXIgY2VsbHMu4oCdIFRoZSBudW1iZXIgb2YgYWN0aXZlIHByb2Nlc3NlcyBpbiBFdXJvcGUgYXBwcm9hY2hlZCAxLDMwMC4gQ291bnRyaWVzIGhhZCBiZWVuIG92ZXJ0YWtlbiBmcm9tIHRoZSBpbnNpZGUgb3V0LCB3b3JraW5nIHRoZWlyIHdheSBmcm9tIGFkbWluaXN0cmF0aW9uIHRvIHRoZSBwb2xpdGljYWwgY29yZS4gVGhlIHBvcHVsYWNlIGhhZCBsb25nIGJlZW4gdW5kZXIgdGhlIGluZmx1ZW5jZSBvZiBhbiBBSSBhbGdvcml0aG0uPC9wPgogICAgICAgICAgICAgICAgPC9kaXY+CgogICAgICAgICAgICAgICAgPCEtLSBQQUdFIDMgLS0+CiAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzPSJwYWdlIj4KICAgICAgICAgICAgICAg     ICAgICA8cD5UaGVyZSB3ZXJlIHR3byByZWJlbCBncm91cHMgYXdhcmUgb2YgdGhpcyBtb3ZlbWVudCwgb25lIG9mIHdoaWNoIHdhcyBsZWQgYnkgdGhlIGZvcm1lciBzbGVlcGVyLiBIZSBleGhpYml0ZWQgYW4gdW5wcmVjZWRlbnRlZCBsZXZlbCBvZiBhd2FyZW5lc3MsIHdpdGggaGlzIHN1YmNvbnNjaW91cyBtb3JlIGV4cHJlc3NlZCB0aGFuIGFueXRoaW5nIHJlY29yZGVkLiBUaGUgZmlybSBiZWNhbWUgYXdhcmUgb2YgaGltIHdoZW4gaGUgd2FzIGFycmVzdGVkIGFuZCBpc29sYXRlZCBvbiBjaGFyZ2VzIG9mIGZvcm1pbmcgYSBzZWN0IGluIGEgcmVtb3RlIG1vdW50YWluIHZpbGxhZ2UuIE5vIG9uZSBoZWFyZCBmcm9tIHRoZW0gZm9yIHRocmVlIHllYXJzIHVudGlsIG1lbWJlcnMgYXBwZWFyZWQgc2ltdWx0YW5lb3VzbHkgaW4gZ3JvdXBzIG9mIHRocmVlIGFjcm9zcyA1MCBjYXBpdGFscyB3b3JsZHdpZGUuIFRoZXkgc2ltcGx5IHN0b29kIHN0aWxsIGZvciBleGFjdGx5IHR3ZW50eS1mb3VyIGhvdXJzLCB0aGVuIGRpc2FwcGVhcmVkIGludG8gdGhlIGNyb3dkcyBsaWtlIGdob3N0cy4gTW9zdCBpbmRpdmlkdWFscyB3ZXJlIHVuYXdhcmUgb2YgdGhpcy4gTm8gb25lIGtuZXcgaG93IGhlIG1hbmFnZWQgdG8gc3luY2hyb25pemUgdGhlbSB3aXRob3V0IHRlY2hub2xvZ3kuIEhlIGRpZG7igJl0IHN0YW5kIG91dCBub3IgY2F1c2UgaGFybSwgYnV0IGhpcyBvYmplY3RpdmVzIHJlbWFpbmVkIHVua25vd24uPC9wPgogICAgICAgICAgICAgICAgICAgIDxwPldlIGtlcHQgaGltIHVuZGVyIG9ic2VydmF0aW9uLCBhbmQgYWZ0ZXIgc2l4IGRheXMsIHRoZSBndWFyZHMgYmVnYW4gYmVsaWV2aW5nIHRoZXkgd2VyZSBoaW0uIFRoZXkgcmVjYWxsZWQgZXZlbnRzIGZyb20gaGlzIGNoaWxk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aWNlLCBJ4oCZZCBuZXZlciBleHBlcmllbmNlZCBhbnl0aGluZyBsaWtlIHRoaXMuIEkgY2FtZSBzbyBoYXJkIEkgZmVsdCBkaXp6eS4gSSBmZWxsIGFzbGVlcCBxdWlja2x5IGFmdGVyLiBXaGVuIEkgd29rZSwgYSBjcm9pc3NhbnQsIG9yYW5nZSBqdWljZSwgYW5kIGEgcG90IG9mIGNvZmZlZSBhd2FpdGVkIG9uIGEgdHJheSBvbiB0aGUgdGFibGUuIFRoZXkgd2VyZSBnb25lIHdpdGhvdXQgYSB0cmFjZS4gSSBsb29rZWQgYXJvdW5kLCBxdWVzdGlvbmluZyBpZiBpdCB3YXMgZXZlbiByZWFsLiBUaGUgd2luZSB3YXMgaGFsZiBkcnVuaywgYXMgd2VyZSB0aGUgYmVlcnMuIEkgbGl0IGEgY2lnYXJldHRlIGFuZCB0b29rIGEgYml0ZSBvZiB0aGUgY3JvaXNzYW50LiBVbmRlciB0aGUgY29mZmVlIGN1cCwgSSBmb3VuZCBhIHNtYWxsIG5vdGUsIGxpa2Ugb25lIGZyb20gYSBmb3J0dW5lIGNvb2tpZS4gSXQgcmVhZDog4oCcUm9zZWJ1ZC7igJ0gSXQgd2FzIEtpbnQuPC9pPjwvcD4KICAgICAgICAgICAgICAgIDwvZGl2PgoKICAgICAgICAgICAgICAgIDwhLS0gUEFHRSAxNCAtLT4KICAgICAgICAgICAgICAgIDxkaXYgY2xhc3M9InBhZ2UiPgogICAgICAgICAgICAgICAgICAgIDxwPjxpPuKAnFJvc2VidWTigJ0gd2FzIHRoZSBjb2RlbmFtZSBmb3IgdGhlIG9wZXJhdGlvbiB0aGF0IGNsZWFyZWQgYSBob3NwaXRhbCBpbiBSdXNzaWEuIFRvZGF5IG1hcmtlZCBleGFjdGx5IHRlbiB5ZWFycyBzaW5jZSBpdCBoYXBwZW5lZC4gRm9yIGEgbW9tZW50LCBJIGZlbHQgc29ycm93LiBNYW55IGNpdmlsaWFucyBoYWQgbG9zdCB0aGVpciBsaXZlcyB0aGF0IG5pZ2h0IGFzIGNvbGxhdGVyYWwgZGFtYWdlLiBLaW50IGhhZCBzYXZlZCB0d28gb3BlcmF0aXZlcyBmcm9tIGJsZWVkaW5nIG91dC4gSSB3YXMsIHRoYW5rZnVsbHksIHVuaGFybWVkIHBoeXNpY2FsbHksIGJ1dCB0aGUgbmlnaHRtYXJlcyBwZXJzaXN0ZWQgbG9uZyBhZnRlcndhcmQuIEl0IHdhcyBvbmUgb2YgdGhvc2Ugam9icy4gRnVjaywgSSBjYW7igJl0IGJlbGlldmUgaGUgcmVtZW1iZXJlZC4gSGUgZXZlbiBnYXZlIHRoZSByZWNydWl0cyB0aGUgY2xlYXJhbmNlIG51bWJlcuKAlHR5cGljYWwgS2ludC48L2k+PC9wPgogICAgICAgICAgICAgICAgICAgIDxwPjxpPk5vYm9keSBldmVyIGRpc2NvdmVyZWQgd2hhdCBwYXJ0IG9mIGhpcyB0cmFpbmluZyBoZeKAmWQgdW5kZXJnb25lLiBSdW1vciBoYXMgaXQgaGUgZm91Z2h0IGhpcyBwZXJzb25hbCBkZW1vbnMgZm9yIGEgbG9uZyB0aW1lIGJlZm9yZSBqb2luaW5nIHRoZSBmb3JjZXMuIEhlIGJvdGNoZWQgaGlzIGZpcnN0IG1pc3Npb24sIGxvc3QgYSBmZW1hbGUgb3BlcmF0aXZlLCBhbmQgZGVzY2VuZGVkIGludG8gbWFkbmVzcy4gTm9ib2R5IGhlYXJkIGZyb20gaGltIGZvciB0aHJlZSB5ZWFycy4gSGUgd2FzIHNlZW4gb24gYSBtb3VudGFpbiB0b3AsIHJlc2N1ZWQgYnkgbG9jYWwgY2xpbWJlcnMuIFRoZXkgcmVwb3J0ZWQgaGUgd2FzIGRlaHlkcmF0ZWQsIGRlbHVzaW9uYWwsIHdpdGggYW4gb2J2aW91cyBpbnRlbnQgdG8gZW5kIGhpcyBsaWZlIHRoZXJlLiBBZnRlciB0aGF0IGluY2lkZW50LCBoZSBiZWdhbiBkZXZlbG9waW5nIGhpcyBhcnRpc3RpYyBzaWRl4oCUbXVzaWMgYW5kIGludGVuc2l2ZSB0aGVyYXB5IGhlbHBlZCByZXZpdmUgd2hhdCB3YXMgbGVmdCBvZiBoaW0uPC9pPjwvcD4KICAgICAgICAgICAgICAgIDwvZGl2PgoKICAgICAgICAgICAgICAgIDwhLS0gUEFHRSAxNSAtLT4KICAgICAgICAgICAgICAgIDxkaXYgY2xhc3M9InBhZ2UiPgogICAgICAgICAgICAgICAgICAgIDxwPjxpPkFmdGVyIHJlY292ZXJ5LCBoZSBmZWxsIGluIGxvdmUuIEEgY2FsbW5lc3MgYWNjb21wYW5pZWQgaGltIGZyb20gdGhhdCBtb21lbnQuIEkgZGlkbuKAmXQgcmVjb2duaXplIGhpbSBhdCBmaXJzdDsgaGUgd2FzIGxhdGVyIHByb21vdGVkIGludG8gY3liZXIgdW5pdHMgYW5kIHRoZSBxdWljayByZXNwb25zZSBkaXZpc2lvbuKAlHN0ZXBwaW5nIHN0b25lcyB0byB0aGUgcHN5IHNxdWFkIGFuZCBsb2dpc3RpY3MuIE5vIG9uZSBoYXMgc2VlbiBoaW0gc2luY2UuPC9pPjwvcD4KICAgICAgICAgICAgICAgICAgICA8cD48aT5JdCBzZWVtcyBoZSBrbm93cyB3aGF0IGV2ZXJ5b25lIGluIHRoZSBmaXJtIGlzIGRvaW5n4oCUc29tZXRoaW5nIGxpa2UgYSBwYXRyb24gd2l0aCBhIGRhcmsgcGFzdC4gSGlzIHRyYWRlbWFyayB3YXMgb2Z0ZW4gY2hhbmdpbmcgY2Ftb3VmbGFnZSBhbmQgbW92aW5nIHN3aWZ0bHkgYmV0d2VlbiBkaWZmZXJlbnQgY2lyY2xlcy4gSGlzIHdpZmUgZGVzY3JpYmVkIGhpbSBhcyBhIEdyZWVrIGdvZCBIZXJtZXPigJRsaXZpbmcgYmV0d2VlbiB3b3JsZHMgb2YgbGlmZSBhbmQgZGVhdGgsIGFwcGVhcmluZyB3aGVyZXZlciBoZSB3YXMgbmVlZGVkIG1vc3QuPC9pPjwvcD4KICAgICAgICAgICAgICAgICAgICA8cD48aT5UaGUgQ29sb2duZSBtaXNzaW9uIHdhcyBzdGFnZWQuIEFsbCDigJx2aWN0aW1z4oCdIG9uIGJvYXJkIHdlcmUgb3VyIG5ldyByZWNydWl0c+KAlHRoZXkgcGxheWVkIGRlYWQgd2l0aCBzdGF0ZS1vZi10aGUtYXJ0IGVmZmVjdHMuIFRoZSBmb290YWdlIHdhcyB1c2VkIGFzIGxldmVyYWdlIHRvIGV4cG9zZSB0aGUgdW5kZXJncm91bmQgaGllcmFyY2h5LjwvaT48L3A+CiAgICAgICAgICAgICAgICA8L2Rpdj4KCiAgICAgICAgICAgICAgICA8IS0tIFBBR0UgMTYgLS0+CiAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzPSJwYWdlIj4KICAgICAgICAgICAgICAgICAgICA8cD48aT5NdXNpYyBmcm9tIFIuRS5NLiBwbGF5ZWQgdGhyb3VnaCB0aGUgdmlueWwgcmVjb3JkIGluIGEgcnVzdGljIHRlYWhvdXNlLiBBIEx1Z2VyIHdhcyBsb2FkZWQsIHdhaXRpbmcgdG8gZmlyZS4gUGVvcGxlIHN0YXJ0ZWQgZmFsbGluZyBmcm9tIHRoZWlyIHNlYXRzIHVwb24gbm90aWNpbmcgdGhlIGd1bi4gVGhlIG1hc2sgY292ZXJlZCBteSBmYWNlLiBUaGUgNzAgeWVhci1vbGQgc29uIG9mIFJlaWNo4oCZcyBzZWN1cml0eSBvZmZpY2lhbCBsb29rZWQgbWUgc2hhcnBseSBpbiB0aGUgZXllcyBiZWZvcmUgYmVpbmcgZWxpbWluYXRlZOKAlHR3byBidWxsZXRzIGluIGhpcyB0b3Jzbywgb25lIGluIGhpcyBuZWNrLCBhbmQgZm91ciBpbiBoaXMgaGVhZC4gSSByZW1vdmVkIHRoZSBsYXN0IGJ1bGxldCBmcm9tIHRoZSBiYXJyZWwgYXMgYSByZW1pbmRlciBvZiBhIGpvYiB3ZWxsIGRvbmUuIFdpdG5lc3NlcyBzaHJhbmsgYmFjayBpbiBmZWFyLiBJIGhlYXJkIHNjcmVhbXMgYXMgSSBsZWZ0IHRoZSBjYWbDqS4gSGVhdnkgcmFpbiBiZWdhbiBmYWxsaW5nIGFzIEkgc2xpcHBlZCBpbnRvIGEgc2lkZSBhbGxleS4gSXQgZmVsdCBjbGVhbnNpbmcuIEkgZW50ZXJlZCB0aGUgY2h1cmNo4oCUYSBnb29kIHBsYWNlIHRvIGdhdGhlciBteSB0aG91Z2h0cyBmb3IgYSByZXBvcnQuIEEgcHJpZXN0IGFwcGVhcmVkIGJlc2lkZSBtZSBhcyBJIHJlZmxlY3RlZCBvbiB0aGUgZXZlbnQuPC9pPjwvcD4KICAgICAgICAgICAgICAgICAgICA8cD7igJxZb3UgZGlkIHdlbGwsIG15IHNvbi4gVGhlIHBhc3NhZ2UgaXMgdW5kZXIgdGhlIGFsdGFyLiBFdmFjLXRlYW0gYW5kIG5ldyBJRCBhcmUgd2FpdGluZyBvbiB0aGUgb3RoZXIgc2lkZS4gRGlkIHlvdSBrZWVwIHRoZSBsYXN0IGJ1bGxldD/igJ08L3A+CiAgICAgICAgICAgICAgICAgICA8cD7igJxOfIGNvdXJzZSwgRmF0aGVyLuKAnTwvcD4KICAgICAgICAgICAgICAgICAgICA8cD7igJxHb2RzcGVlZC7igJ08L3A+CiAgICAgICAgICAgICAgICA8L2Rpdj4KICAgICAgICAgICAgPC9kaXY+CgogICAgICAgICAgICA8ZGl2IGNsYXNzPSJjb250cm9scyI+CiAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzPSJwYWdlLW51bWJlciI+PHNwYW4gaWQ9InBhZ2UtbnVtIj4xPC9zcGFuPiAvIDxzcGFuIGlkPSJ0b3RhbC1wYWdlcyI+MTwvc3Bhbj48L2Rpdj4KICAgICAgICAgICAgICAgIDxkaXY+CiAgICAgICAgICAgICAg      ICAgICAgPGJ1dHRvbiBjbGFzcz0iYnRuLW5hdiIgaWQ9Im5leHQtYnRuIiBvbmNsaWNrPSJjaGFuZ2VQYWdlKDEpIj5uZXh0PC9idXR0b24+CiAgICAgICAgICAgICAgICA8L2Rpdj4KICAgICAgICAgICAgPC9kaXY+CiAgICAgICAgPC9kaXY+CiAgICA8L2Rpdj4KPC9ib2R5Pgo8L2h0bWw+";
+    // SHA-256 hash for password verification
+    const TARGET_HASH = "edf2a22f28c630865a34157482f9971033e23d31d3d2647ccfd9534e666cc33a";
+    
+    const passwordInput = document.getElementById('pass');
+    const loginOverlay = document.getElementById('login-overlay');
+    const bookWrapper = document.getElementById('book-wrapper');
+    const errorMsg = document.getElementById('error-msg');
 
-    async function s256(m) {
-        const msgBuffer = new TextEncoder().encode(m);
+    async function sha256(message) {
+        const msgBuffer = new TextEncoder().encode(message);
         const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
         const hashArray = Array.from(new Uint8Array(hashBuffer));
         return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     }
 
-    const _0x9f2 = "edf2a22f28c630865a34157482f9971033e23d31d3d2647ccfd9534e666cc33a";
-    const inp = document.getElementById('pass');
-    const load = document.getElementById('loader');
-    const err = document.getElementById('error');
-
-    inp.addEventListener('keyup', async function(e) {
+    passwordInput.addEventListener('keyup', async function(e) {
         if (e.key === 'Enter') {
-            const val = this.value.toLowerCase().trim();
-            const h = await s256(val);
-            if (h === _0x9f2) {
-                // Decrypt (Base64 decode) and overwrite document
+            const inputVal = this.value.toLowerCase().trim();
+            const inputHash = await sha256(inputVal);
+
+            if (inputHash === TARGET_HASH) {
+                // Success
                 this.style.borderColor = "#4BB543";
-                load.style.opacity = "0";
+                loginOverlay.style.opacity = "0";
                 setTimeout(() => {
-                    const decoded = atob(_0x4a1b);
-                    document.open();
-                    document.write(decoded);
-                    document.close();
-                }, 800);
+                    loginOverlay.style.display = "none";
+                    bookWrapper.classList.add('visible');
+                    setTimeout(() => {
+                        bookWrapper.style.opacity = "1";
+                    }, 50);
+                }, 1000);
             } else {
-                err.style.opacity = "1";
+                // Failure
+                errorMsg.style.opacity = "1";
                 this.style.borderColor = "#ff4444";
-                setTimeout(() => { err.style.opacity = "0"; }, 2000);
+                setTimeout(() => { 
+                    errorMsg.style.opacity = "0"; 
+                    this.style.borderColor = "#c5a059";
+                }, 2000);
             }
         }
     });
+
+    // PAGINATION LOGIC
+    const pages = document.querySelectorAll('.page');
+    const totalPagesSpan = document.getElementById('total-pages');
+    const pageNumSpan = document.getElementById('page-num');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+
+    let currentPage = 0;
+    const totalPages = pages.length;
+
+    totalPagesSpan.innerText = totalPages;
+
+    function changePage(direction) {
+        const newIndex = currentPage + direction;
+        if (newIndex < 0 || newIndex >= totalPages) return;
+
+        pages[currentPage].classList.remove('active');
+        currentPage = newIndex;
+        pages[currentPage].classList.add('active');
+        
+        pageNumSpan.innerText = currentPage + 1;
+        prevBtn.disabled = (currentPage === 0);
+        nextBtn.disabled = (currentPage === totalPages - 1);
+
+        // Scroll to top of new page
+        document.getElementById('content-area').scrollTop = 0;
+    }
+
+    prevBtn.addEventListener('click', () => changePage(-1));
+    nextBtn.addEventListener('click', () => changePage(1));
 </script>
 
 </body>
