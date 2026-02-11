@@ -95,7 +95,7 @@
       padding:15px 20px; background:linear-gradient(to bottom, rgba(244,228,188,0), rgba(244,228,188,1) 40%);
       display:flex; justify-content:space-between; align-items:center;
     }
-    .controls.hidden{ visibility:hidden; } /* Hide controls on Index page */
+    .controls.hidden{ visibility:hidden; } 
     
     .btn{
       border:1px solid rgba(0,0,0,.25); background:rgba(255,255,255,.7); color:#333; padding:10px 18px; 
@@ -167,14 +167,12 @@
             <!-- 1. INDEX VIEW -->
             <div id="view-index" class="view-section active">
                 <div class="index-menu">
-                    <!-- Gleis 7 Card -->
                     <div class="story-card" onclick="openStory('gleis7')">
                         <h2>I. Gleis 7</h2>
                         <p data-lang="en">The Finale — A train, a writer, and the end.</p>
                         <p data-lang="si">Finale — Vlak, pisatelj in konec.</p>
                     </div>
 
-                    <!-- Kint Card -->
                     <div class="story-card" onclick="openStory('kint')">
                         <h2>II. Kint</h2>
                         <p data-lang="en">The Chronicles — Serpentine descending...</p>
@@ -183,83 +181,225 @@
                 </div>
             </div>
 
-            <!-- 2. GLEIS 7 STORY -->
+            <!-- 2. GLEIS 7 STORY (FULL TEXT) -->
             <div id="view-gleis7" class="view-section">
-                <!-- Page 1 -->
+                <!-- P1 -->
                 <div class="page active">
                     <div data-lang="en">
                       <p>The cigarette fit nicely with the shadows that morning. It was 14 minutes after 8, and the rhythm of him appearing into his consciousness reminded me of a syncope, a little off-beat. The working class was already in their places, and he simply sat there, carrying nothing more than a black leather backpack, with one earphone in his ear and smoke caressing the sunny side of his face. He looked straight through me. The train was approaching, but he remained looking at me.</p>
                       <p class="separator">---</p>
                       <p>I dozed off in the wagon with my book left open when I noticed him sitting across from me, absently staring into moving trees.</p>
+                      <p>There was nobody in that compartment but the two of us. It felt almost like being in a room with an untamed animal covered in human skin; he was being called to something.</p>
                     </div>
                     <div data-lang="si">
                       <p>Cigareta se je tistega jutra lepo podala sencam. Bilo je 14 minut čez osmo in ritem njegovega pojavljanja v zavest me je spominjal na sinkopo, nekoliko zunaj ritma. Delavski razred je bil že na svojih mestih, on pa je preprosto sedel tam, brez česar koli drugega kot črnega usnjenega nahrbtnika, z eno slušalko v ušesu in dimom, ki je božal sončno stran njegovega obraza. Gledal je naravnost skozi mene. Vlak se je bližal, a on je še naprej gledal vame.</p>
                       <p class="separator">---</p>
                       <p>Zadremal sem v vagonu z odprto knjigo, ko sem opazil, da sedi nasproti mene in odsotno strmi v premikajoča se drevesa.</p>
+                      <p>V tistem kupeju ni bilo nikogar razen naju. Zdelo se je skoraj tako, kot bi bil v sobi z neukročeno živaljo, prekrito s človeško kožo; nekaj ga je klicalo.</p>
                     </div>
                 </div>
-                <!-- Page 2 -->
+                <!-- P2 -->
                 <div class="page">
                     <div data-lang="en">
-                      <p>There was nobody in that compartment but the two of us. It felt almost like being in a room with an untamed animal covered in human skin; he was being called to something. He put on his sunglasses, earphones silently playing a steady tune, tilted his head a bit, and was away into his own mind.</p>
-                      <p>The ticket lady arrived shortly afterward. He had already left his ticket in the open to be checked. No one disturbed him, as if they were informed of his journey. I noticed he carried a camera with him. I couldn’t help but wonder: what does a person like that take pictures of?</p>
+                      <p>He put on his sunglasses, earphones silently playing a steady tune, tilted his head a bit, and was away into his own mind. The ticket lady arrived shortly afterward. He had already left his ticket in the open to be checked. No one disturbed him, as if they were informed of his journey. I noticed he carried a camera with him; his backpack wasn’t fully closed. I couldn’t help but wonder: what does a person like that take pictures of?</p>
+                      <p>He didn’t move for three straight hours; his sunglasses gave the impression he was constantly observing his surroundings. His breathing was reduced to silence.</p>
+                      <p>I finished reading my book and had a satisfied grimace on my face. In that moment, I noticed his fingers move as if tapping to a rhythm. The police border was approaching, and I knew he could sense that too. He had been awake for quite some time now. A peculiar feeling.</p>
                     </div>
                     <div data-lang="si">
-                       <p>V tistem kupeju ni bilo nikogar razen naju. Zdelo se je skoraj tako, kot bi bil v sobi z neukročeno živaljo, prekrito s človeško kožo; nekaj ga je klicalo. Nadel si je sončna očala, slušalke so tiho igrale enakomerno melodijo, nagnil je glavo in odtaval v svoj um.</p>
-                       <p>Kmalu zatem je prišla sprevodnica. Svojo vozovnico je že pustil na vidnem mestu za pregled. Nihče ga ni motil, kot da bi bili obveščeni o njegovem potovanju. Opazil sem, da ima s seboj fotoaparat. Nisem si mogel kaj, da se ne bi vprašal: kaj takšna oseba fotografira?</p>
+                       <p>Nadel si je sončna očala, slušalke so tiho igrale enakomerno melodijo, nagnil je glavo in odtaval v svoj um. Kmalu zatem je prišla sprevodnica. Svojo vozovnico je že pustil na vidnem mestu za pregled. Nihče ga ni motil, kot da bi bili obveščeni o njegovem potovanju. Opazil sem, da ima s seboj fotoaparat; njegov nahrbtnik ni bil povsem zaprt. Nisem si mogel kaj, da se ne bi vprašal: kaj takšna oseba fotografira?</p>
+                       <p>Tri ure se ni premaknil; njegova sončna očala so dajala vtis, da nenehno opazuje okolico. Njegovo dihanje je bilo zmanjšano na tišino.</p>
+                       <p>Končal sem branje knjige in imel na obrazu zadovoljno grimaso. V tistem trenutku sem opazil, da se njegovi prsti premikajo, kot bi tapkali v ritmu. Bližala se je policijska meja in vedel sem, da to čuti tudi on. Že kar nekaj časa je bil buden. Nenavaden občutek.</p>
                     </div>
                 </div>
-                <!-- Page 3 -->
+                <!-- P3 -->
                 <div class="page">
                     <div data-lang="en">
-                      <p>He didn’t move for three straight hours; his sunglasses gave the impression he was constantly observing his surroundings. His breathing was reduced to silence. I finished reading my book. The police border was approaching, and I knew he could sense that too.</p>
                       <p>“It must have been a good book,” he remarked.</p>
                       <p>“Excuse me?” I asked.</p>
-                      <p>“Oh, yes. It was indeed.” I responded honestly.</p>
-                      <p>The doors opened loudly, and one police officer checked our documents. They didn’t ask him anything; he didn’t even remove his sunglasses.</p>
-                      <p>“When you travel, leave your luggage slightly open—you won’t seem so suspicious next time,” he said politely.</p>
+                      <p>“Oh, yes. It was indeed. It was indeed.” I responded honestly.</p>
+                      <p>The corners of his lips suggested a smile, but it was hard to tell under his black round sunglasses. He integrated into his persona what his eyes were telling.</p>
+                      <p>The doors opened loudly, and one police officer checked our documents in a loud manner. The doors opened again, and another officer slid behind him, all talking into their walkie-talkies. I noticed him observing me while they asked questions about where I was traveling. I had to open my suitcase and wait until they checked my passport number through the central system.</p>
+                      <p>They didn’t ask him anything; he didn’t even remove his sunglasses. He gave a polite nod to the officer, and he returned it in a similar manner.</p>
                     </div>
                     <div data-lang="si">
-                      <p>Tri ure se ni premaknil; njegova sončna očala so dajala vtis, da nenehno opazuje okolico. Njegovo dihanje je bilo zmanjšano na tišino. Končal sem branje knjige. Bližala se je policijska meja in vedel sem, da to čuti tudi on.</p>
                       <p>“Verjetno je bila dobra knjiga,” je pripomnil.</p>
                       <p>“Oprostite?” sem vprašal.</p>
                       <p>“Oh, da. Res je bila. Res je bila,” sem iskreno odgovoril.</p>
-                      <p>Vrata so se glasno odprla in policist je pregledal najine dokumente. Njega niso ničesar vprašali; niti sončnih očal ni snel.</p>
-                      <p>“Ko potujete, pustite prtljago rahlo odprto – naslednjič ne boste videti tako sumljivi,” je vljudno rekel.</p>
+                      <p>Kotički njegovih ustnic so nakazovali nasmeh, a pod črnim okroglimi očali je bilo to težko reči. V svojo persono je integriral tisto, kar so govorile njegove oči.</p>
+                      <p>Vrata so se glasno odprla in policist je glasno pregledal najine dokumente. Vrata so se ponovno odprla in za njim je smuknil še en policist; vsi so govorili v svoje walkie-talkie. Opazil sem, da me opazuje, medtem ko so me spraševali, kam potujem. Moral sem odpreti kovček in počakati, da so preverili številko mojega potnega lista v centralnem sistemu.</p>
+                      <p>Njega niso ničesar vprašali; niti sončnih očal ni snel. Policistu je vljudno prikimal in ta mu je vrnil na enak način.</p>
                     </div>
                 </div>
-                <!-- Page 4 -->
+                <!-- P4 -->
                 <div class="page">
                     <div data-lang="en">
-                      <p>“They’re just doing their job. Humans. Same as you and me. But give them a sense of power, and you’ll really get to know them. Thank you, young man. I will try your method next time.”</p>
-                      <p>A lovely young lady in an oversized yellow coat invited herself into our compartment. She fell asleep after a couple of train stops. Scribbling away into my thoughts, I saw that the young man had a delicate tear coming out of the corner of his eye.</p>
-                      <p>“Are you alright, young man?” I asked silently.</p>
-                      <p>He just looked at me and smiled. “It’s Lacrimosa, from Zbigniew Preisner. I do not understand why, but sometimes I have a feeling it cuts deep inside my chest and releases me from my body.”</p>
+                      <p>He was too young to be someone important, I thought. I’d say he was in his late twenties.</p>
+                      <p>“When you travel, leave your luggage slightly open—you won’t seem so suspicious next time,” he said politely.</p>
+                      <p>“They’re just doing their job. Humans. Same as you and me. Humans. Same as you and me, but give them a sense of power, and you’ll really get to know them. Thank you, young man. I will try your method next time,” I decided was an appropriate response.</p>
+                      <p>We both looked outside the window until the train continued on its journey.</p>
+                      <p>A lovely young lady in an oversized yellow coat and light blue jeans invited herself into our compartment. She carried a bag full of books and something that resembled a small plant tucked away in paper. She too fell asleep after a couple of train stops.</p>
                     </div>
                     <div data-lang="si">
-                      <p>“Samo opravljajo svoje delo. Ljudje. Enaki kot vi in jaz. Toda dajte jim občutek moči in res jih boste spoznali. Hvala, mladenič. Naslednjič bom poskusil vašo metodo.”</p>
-                      <p>Ljubka mladenka v prevelikem rumenem plašču se je povabila v najin kupe. Po nekaj postajah je zaspala. Ko sem čečkal svoje misli, sem videl, da ima mladenič v kotičku očesa nežno solzo.</p>
-                      <p>“Ste v redu, mladenič?” sem tiho vprašal.</p>
-                      <p>Samo pogledal me je in se nasmehnil. “To je Lacrimosa, Zbigniew Preisner. Ne razumem zakaj, a včasih imam občutek, da mi zareže globoko v prsi in me osvobodi telesa.”</p>
+                      <p>Bil je premlad, da bi bil nekdo pomemben, sem pomislil. Rekel bi, da je bil v poznih dvajsetih.</p>
+                      <p>“Ko potujete, pustite prtljago rahlo odprto – naslednjič ne boste videti tako sumljivi,” je vljudno rekel.</p>
+                      <p>“Samo opravljajo svoje delo. Ljudje. Enaki kot vi in jaz. Ljudje. Enaki kot vi in jaz, toda dajte jim občutek moči in res jih boste spoznali. Hvala, mladenič. Naslednjič bom poskusil vašo metodo,” sem se odločil za primeren odgovor.</p>
+                      <p>Oba sva gledala skozi okno, dokler ni vlak nadaljeval svoje poti.</p>
+                      <p>Ljubka mladenka v prevelikem rumenem plašču in svetlo modrih kavbojkah se je povabila v najin kupe. Nosila je torbo polno knjig in nekaj, kar je spominjalo na majhno rastlino, zavito v papir. Tudi ona je po nekaj postajah zaspala.</p>
                     </div>
                 </div>
-                <!-- Page 5 (Finale) -->
+                <!-- P5 -->
                 <div class="page">
                     <div data-lang="en">
+                       <p>I started writing in my notebook all the memorable sentences and some character descriptions. I was something like a writer—or, so I was mostly perceived. My wife waited for me at home; she tidied everything up just before I arrived. Her hair found its way between my fingers just before I kissed her.</p>
+                       <p>Scribbling away into my thoughts, I saw that the young man had a delicate tear coming out of the corner of his eye, but his face was numb.</p>
+                       <p>“Are you alright, young man?” I asked silently.</p>
+                       <p>He just looked at me and smiled; the tear dropped on his clothes. This time I saw the dimples on his cheeks, and his eyes were clearly joyful.</p>
+                       <p>“It’s Lacrimosa, from Zbiegnew Preisner. I do not understand why, but sometimes I have a feeling it cuts deep inside my chest and releases me from my body.”</p>
+                    </div>
+                    <div data-lang="si">
+                      <p>V zvezek sem začel zapisovati vse nepozabne stavke in nekaj opisov likov. Bil sem nekaj takega kot pisatelj – ali vsaj tako so me večinoma dojemali. Žena me je čakala doma; vse je pospravila tik preden sem prispel. Njeni lasje so našli pot med mojimi prsti tik preden sem jo poljubil.</p>
+                      <p>Ko sem čečkal svoje misli, sem videl, da ima mladenič v kotičku očesa nežno solzo, a njegov obraz je bil otrpel.</p>
+                      <p>“Ste v redu, mladenič?” sem tiho vprašal.</p>
+                      <p>Samo pogledal me je in se nasmehnil; solza je padla na njegova oblačila. Tokrat sem videl jamice na njegovih licih in njegove oči so bile očitno vesele.</p>
+                      <p>“To je Lacrimosa, Zbigniew Preisner. Ne razumem zakaj, a včasih imam občutek, da mi zareže globoko v prsi in me osvobodi telesa.”</p>
+                    </div>
+                </div>
+                <!-- P6 -->
+                <div class="page">
+                    <div data-lang="en">
+                      <p>I couldn’t say I am studying music; it’s a part of me, organic. I am discovering myself with music. I am studying myself. That is exactly why I am traveling and making photographs when it feels right. I’ve done many things in my life; I have a feeling I am somehow older than I’ve lived. I finished thirty in May.</p>
+                      <p>He didn’t ask my age; it was also not relevant, but I was significantly older.</p>
+                      <p>The girl was still sleeping and breathing like a small cat, curled up in her coat.</p>
                       <p>“You are a writer, I presume?” he read me at a glance.</p>
                       <p>“You might say that, yes.”</p>
-                      <p>“I always wanted to tell someone my story.”</p>
-                      <p>“Well, it’s a long trip ahead of us. I’m Jonathan.”</p>
-                      <p>“Kint,” he nodded.</p>
-                      <p>The train lights went out. Somehow, the power was out. In the distance, we saw lightning. The train was stranded. “Sehr geehrte Fahrgäste...” The woman’s voice spoke politely with a slightly worried undertone. Something loud sounded almost like two gunshots in front of the train.</p>
+                      <p>“I always wanted to tell someone my story,” he expressed his wish, not really expecting it to happen.</p>
+                      <p>“Well, it’s a long trip ahead of us. The night will be getting cold, and I’d be honored to hear it—maybe even include some parts in my book if you’d allow. I am sorry, I completely forgot to ask your name. I’m Jonathan.”</p>
+                      <p>“Kint,” he nodded again.</p>
                     </div>
                     <div data-lang="si">
+                      <p>Ne bi mogel reči, da študiram glasbo; je del mene, organska. Z glasbo odkrivam sebe. Študiram samega sebe. Točno zato potujem in fotografiram, ko se zdi prav. V življenju sem počel veliko stvari; imam občutek, da sem nekako starejši, kot sem živel. Maja sem dopolnil trideset.</p>
+                      <p>Ni vprašal za mojo starost; tudi ni bilo pomembno, a bil sem precej starejši.</p>
+                      <p>Dekle je še vedno spalo in dihalo kot majhna mačka, zvita v svojem plašču.</p>
                       <p>“Predvidevam, da ste pisatelj?” me je prebral z enim pogledom.</p>
                       <p>“Lahko bi tako rekli, da.”</p>
-                      <p>“Vedno sem želel nekomu povedati svojo zgodbo.”</p>
-                      <p>“No, pred nami je dolga pot. Jaz sem Jonathan.”</p>
-                      <p>“Kint,” je prikimal.</p>
-                      <p>Luči na vlaku so ugasnile. Zmanjkalo je elektrike. V daljavi smo videli bliskanje. Vlak je obtičal. “Sehr geehrte Fahrgäste...” Ženski glas je govoril vljudno z rahlo zaskrbljenim podtonom. Nekaj glasnega je zvenelo skoraj kot dva strela pred vlakom.</p>
+                      <p>“Vedno sem želel nekomu povedati svojo zgodbo,” je izrazil svojo željo, ne da bi zares pričakoval, da se bo uresničila.</p>
+                      <p>“No, pred nami je dolga pot. Noč bo postala hladna in v čast bi mi bilo, če bi jo slišal – morda celo vključil nekaj delov v svojo knjigo, če dovolite. Oprostite, povsem sem pozabil vprašati za vaše ime. Jaz sem Jonathan.”</p>
+                      <p>“Kint,” je spet prikimal.</p>
+                    </div>
+                </div>
+                <!-- P7 -->
+                <div class="page">
+                    <div data-lang="en">
+                      <p>We both looked at the girl, who changed her sleeping position as she dozed off in her slumber. I wrote down the milestones needed to write his story. He spoke in a calm manner, systematically analyzing every choice, every mistake he made. Occasionally, we would burst into laughter, noticing the passing of time.</p>
+                      <p>I related to his stories quite a bit. I noticed his trip was changing who he was. He was leaving one world for another; I could tell it was a jump he had made many times before. The unknown had a pull on him.</p>
+                      <p>Outside was completely dark, and we had arrived in some high mountain area where snow was attaching itself to our window, as if looking for a way in.</p>
+                      <p>The girl woke up. Looking around herself, trying to recognize where she was.</p>
+                    </div>
+                    <div data-lang="si">
+                      <p>Oba sva pogledala dekle, ki je v spanju spremenilo položaj. Zapisal sem si mejnike, potrebne za pisanje njegove zgodbe. Govoril je mirno, sistematično analiziral vsako izbiro, vsako napako, ki jo je naredil. Občasno sva bruhnila v smeh, ko sva opazila minevanje časa.</p>
+                      <p>Njegove zgodbe so mi bile precej blizu. Opazil sem, da njegovo potovanje spreminja to, kar je. Zapuščal je en svet za drugega; videl sem, da je to skok, ki ga je opravil že mnogokrat prej. Neznano ga je privlačilo.</p>
+                      <p>Zunaj je bila popolna tema in prispeli smo v neko visokogorje, kjer se je sneg oprijemal našega okna, kot bi iskal pot noter.</p>
+                      <p>Dekle se je zbudilo. Ozirala se je okoli sebe in skušala prepoznati, kje je.</p>
+                    </div>
+                </div>
+                <!-- P8 -->
+                <div class="page">
+                    <div data-lang="en">
+                      <p>The coffee lady came knocking. We’d grown quite hungry after an hour or two. All three of us drank coffee, and a certain gratitude was felt. The girl looked at us. The train lights went out. Somehow, the power was out. In the distance, we saw lightning—or what we thought was lightning at least—the electrical cable was obviously severed up ahead. The train passed it by with its inertia. This was going to be a long trip.</p>
+                      <p>The girl started typing vigorously into her cellphone. The light illuminated her silhouette into a neon presence. The signal was obviously not very strong here, but she persisted.</p>
+                      <p>The silence was broken by a woman’s scream a couple of compartments ahead, followed only by the laughter of her friends. Someone thought it appropriate to scare the poor girl. The green emergency lights on the floor guided us to the exits. We were hesitant to go out since there was nothing for us out there—nothing but darkness and frost.</p>
+                    </div>
+                    <div data-lang="si">
+                      <p>Gospa s kavo je potrkala. Po uri ali dveh smo postali precej lačni. Vsi trije smo pili kavo in čutila se je določena hvaležnost. Dekle nas je pogledalo. Luči na vlaku so ugasnile. Zmanjkalo je elektrike. V daljavi smo videli bliskanje – ali vsaj tisto, kar smo mislili, da je bliskanje – električni kabel je bil očitno pretrgan. Vlak je šel mimo z inercijo. To bo dolgo potovanje.</p>
+                      <p>Dekle je začelo mrzlično tipkati po mobilnem telefonu. Svetloba je osvetlila njeno silhueto v neonsko prisotnost. Signal tukaj očitno ni bil močan, a je vztrajala.</p>
+                      <p>Tišino je prekinil ženski krik nekaj kupejev naprej, ki mu je sledil le smeh njenih prijateljev. Nekdo je menil, da je primerno prestrašiti ubogo dekle. Zelene zasilne luči na tleh so nas vodile k izhodom. Oklevali smo z izhodom, saj zunaj za nas ni bilo ničesar – nič razen teme in mraza.</p>
+                    </div>
+                </div>
+                <!-- P9 -->
+                <div class="page">
+                    <div data-lang="en">
+                       <p>The silence started to creep in; we started perceiving all the comforting noises of the steel machine, which were now absent. Silence spoke for itself. We were in a half-full train, stranded on the slightly descending slope of a mountain. The last town was two hours away, and we weren’t due to arrive anytime soon.</p>
+                       <p>One could see the trees forming in the woods like fine painting brushes.</p>
+                       <p>“Stay calm, they will come and get us. I’ve seen it once before. This relation across the mountains is always a bit dodgy this time of year. I just hope that…” Kint stopped speaking and listened sharply.</p>
+                       <p>The girl was trying to call someone but with no success. I saw her hands slightly tremble in frustration.</p>
+                       <p>“Sehr geehrte Fahrgäste, aufgrund einer technischen Störung...” The woman’s voice spoke politely with a slightly worried undertone. Something loud sounded almost like two gunshots in front of the train.</p>
+                    </div>
+                    <div data-lang="si">
+                      <p>Tišina se je začela prikradati; začeli smo zaznavati odsotnost vseh tolažilnih zvokov jeklenega stroja. Tišina je govorila zase. Bili smo v napol polnem vlaku, obtičali na rahlo spuščajočem se pobočju gore. Zadnje mesto je bilo oddaljeno dve uri in kmalu ne bomo prispeli.</p>
+                      <p>Videlo se je drevesa, ki so se v gozdu oblikovala kot fini slikarski čopiči.</p>
+                      <p>“Ostanite mirni, prišli bodo po nas. Enkrat sem to že videl. Ta povezava čez gore je v tem letnem času vedno malo nezanesljiva. Samo upam, da...” Kint je nehal govoriti in ostro prisluhnil.</p>
+                      <p>Dekle je poskušalo nekoga poklicati, a brez uspeha. Videl sem, da se ji roke rahlo tresejo od frustracije.</p>
+                      <p>“Sehr geehrte Fahrgäste, aufgrund einer technischen Störung...” Ženski glas je govoril vljudno z rahlo zaskrbljenim podtonom. Nekaj glasnega je zvenelo skoraj kot dva strela pred vlakom.</p>
+                    </div>
+                </div>
+                <!-- P10 -->
+                <div class="page">
+                    <div data-lang="en">
+                      <p>At times like these, I think of my wife, of my beloved. Knowing she is in a warm home, safe. The girl froze stiff. Kint was in a meditative state of mind, as if he visualized all of this beforehand. Like figures on a chessboard, simply acting out their script. He tilted his head as if wanting to ask me something. I think I saw a glimpse of his alter ego—or was this really him? In that moment, the lights turned back on. The train started moving again; it was obviously a minor glitch. So, at least, we were told.</p>
+                      <p>The girl opened a small bag of peanuts, put her fluffy schapka hat slightly over her eyes, and continued crunching at a slightly calmer pace. My wife sent me a photo of her reading a book while drinking tea in our reading nest by the window. Our house was a tasteful combination of rustic and modern. We kept the second floor cozier for some reason; a little chaos did us good. Kids ran down the wagon, screaming with joy. The woman was caught being momentarily absent in her thoughts. She emerged from a brief freeze with warm eyes, silently looking at us both.</p>
+                    </div>
+                    <div data-lang="si">
+                      <p>V takih trenutkih pomislim na svojo ženo, na svojo ljubljeno. Da vem, da je na toplem, varna. Dekle je otrpnilo. Kint je bil v meditativnem stanju, kot da bi vse to vnaprej vizualiziral. Kot figure na šahovnici, ki preprosto igrajo svoj scenarij. Nagnil je glavo, kot bi me hotel nekaj vprašati. Mislim, da sem za trenutek ugledal njegov alter ego – ali pa je bil to res on? V tistem trenutku so se luči spet prižgale. Vlak se je spet začel premikati; očitno je šlo za manjšo napako. Tako so nam vsaj rekli.</p>
+                      <p>Dekle je odprlo majhno vrečko arašidov, si potegnilo svojo kosmato kučmo rahlo čez oči in nadaljevalo z grizljanjem v nekoliko mirnejšem tempu. Žena mi je poslala fotografijo, kako bere knjigo in pije čaj v najinem bralnem gnezdu ob oknu. Najina hiša je bila okusna kombinacija rustikalnega in modernega. Drugo nadstropje sva ohranila bolj udobno; malo kaosa nam je delo dobro. Otroci so tekli po vagonu in kričali od veselja. Ženska je bila za trenutek ujeda v svoji odsotnosti. Iz kratke otrplosti se je prebudila s toplimi očmi in naju oba tiho opazovala.</p>
+                    </div>
+                </div>
+                <!-- P11 -->
+                <div class="page">
+                    <div data-lang="en">
+                      <p>Kint carried a slight smirk and a concealed weapon—a German Luger. The screaming stopped. Finally. Kids shouldn’t be let out of their safety at times like these. Silence crept inside the train. Suddenly, the lights went out, and flashing was seen in the compartments up front. The cellphones illuminated our faces, but Kint remained looking out into the dark.</p>
+                      <p>"God rest their souls," he whispered to himself.</p>
+                      <p>Killings were done with great care—snuffed out with meticulous detail and care. They didn’t even have time to panic. The blood-soaked train kept striving toward its destination—a bleak, dead horse. I had to use the Luger on the old man. There was no pleasure in doing so. The woman was the only witness left. In her pretty yellow jacket, she stepped over cooling bodies, sticky blood dripping from the windows. I don’t know what drugs she was on, but in that—dare I say—romantic moment, I felt intrigued.</p>
+                    </div>
+                    <div data-lang="si">
+                      <p>Kint je imel rahel nasmešek in skrito orožje – nemški Luger. Kričanje je prenehalo. Končno. Otrok v takih časih ne bi smeli spuščati iz varnosti. Tišina se je prikradla v vlak. Nenadoma so luči ugasnile in v sprednjih kupejih se je zabliskalo. Mobilni telefoni so osvetlili naše obraze, a Kint je še naprej gledal v temo.</p>
+                      <p>"Bog se usmili njihovih duš," je zašepetal sam pri sebi.</p>
+                      <p>Uboji so bili izvedeni z veliko pazljivostjo – ugasnjeni z natančnimi podrobnostmi in skrbnostjo. Niso imeli niti časa za paniko. Krvav vlak je hitel proti svojemu cilju – pustemu, mrtvemu konju. Na starcu sem moral uporabiti Lugerja. V tem ni bilo nobenega užitka. Ženska je bila edina preostala priča. V svoji lepi rumeni jakni je stopala čez ohlajajoča se trupla, lepljiva kri je kapljala z oken. Ne vem, na kakšnih drogah je bila, a v tistem – upam si reči – romantičnem trenutku sem bil zaintrigiran.</p>
+                    </div>
+                </div>
+                <!-- P12 -->
+                <div class="page">
+                    <div data-lang="en">
+                      <p>She could be useful. How to kill something already dead, already beyond. She smiled at me. The train came to a slow stop, and I took her through the dark restaurant wagon. One could still smell coffee on the tables. Dim moonlight drew us into silhouettes. Her warmth found its place beside me, gazing into me, into the black of my eyes, searching for something. I felt her lips on mine, kissing me. I just stood there, like an idiot. I had never done this on the job. Suddenly, I felt her naked, shivering body curled up close. One last flash—she was gone as well. She killed herself with my Luger. Not the best date I ever had.</p>
+                      <p>Stepping out of the train onto the white rocks, we contacted headquarters for phase two. We were well within the timeframe. The evidence had been planted.</p>
+                    </div>
+                    <div data-lang="si">
+                      <p>Lahko bi bila koristna. Kako ubiti nekaj, kar je že mrtvo, že onkraj. Nasmehnila se mi je. Vlak se je počasi ustavil in peljal sem jo skozi temen restavracijski vagon. Na mizah se je še vedno vonjalo kavo. Medla mesečina naju je risala v silhuete. Njena toplina je našla prostor ob meni, strmela je vame, v črnino mojih oči, iskala nekaj. Začutil sem njene ustnice na svojih, poljubljala me je. Samo stal sem tam, kot idiot. Tega še nikoli nisem počel na delu. Nenadoma sem začutil njeno golo, drhteče telo, zvito tesno ob meni. Zadnji blisk – tudi ona je odšla. Ubila se je z mojim Lugerjem. Ni bil najboljši zmenek, kar sem jih imel.</p>
+                      <p>Ko smo stopili z vlaka na bele skale, smo kontaktirali štab za drugo fazo. Bili smo znotraj časovnega okvira. Dokazi so bili podtaknjeni.</p>
+                    </div>
+                </div>
+                <!-- P13 -->
+                <div class="page">
+                    <div data-lang="en">
+                      <p>Videos were "leaked" three days after the "terrorist massacre," used for a false-flag attack. The woman in yellow was the daughter of a conservative politician who obviously needed some convincing. What followed was history repeating itself. Cities were left frozen in time. Swarms of drones delivered the X8QCH virus. Dormant killer caterpillar robots located remains of life, neutralizing the danger. The virus was made to disorient the target, converting them into non-aggressive bags of flesh. It was interesting to observe them repeating the patterns of behavior they knew as children—caterpillars grouping them into piles. Well-orchestrated operators checked on the progress. Like launching a space rocket, everything was checked and pre-calculated. The brilliant chain of command dispersed any possible feelings of guilt or doubt.</p>
+                    </div>
+                    <div data-lang="si">
+                      <p>Videoposnetki so "pricurljali" v javnost tri dni po "terorističnem pokolu", uporabljeni za napad pod lažno zastavo. Ženska v rumenem je bila hči konservativnega politika, ki je očitno potreboval nekaj prepričevanja. Sledilo je ponavljanje zgodovine. Mesta so ostala zamrznjena v času. Roji dronov so dostavili virus X8QCH. Speči roboti gosenice so locirali ostanke življenja in nevtralizirali nevarnost. Virus je bil narejen za dezorientacijo tarče, spremenil jih je v neagresivne vreče mesa. Zanimivo je bilo opazovati, kako ponavljajo vzorce vedenja, ki so jih poznali kot otroci – gosenice so jih zlagale na kupe. Dobro usklajeni operaterji so preverjali napredek. Kot pri izstrelitvi vesoljske rakete je bilo vse preverjeno in vnaprej izračunano. Briljantna poveljniška veriga je razpršila morebitne občutke krivde ali dvoma.</p>
+                    </div>
+                </div>
+                <!-- P14 -->
+                <div class="page">
+                    <div data-lang="en">
+                      <p>Shrimps never tasted so good at gatherings of officials. I could never understand that. But the women were, indeed, superb. Before recruitment, I thought about the good in the world. It was an obsolete juvenile concept. The woman from the train invited herself into my champagne glass. I felt her look on my back, her body, the splatter of her blood. Old men piercing the newly corrupted souls with sadism and propaganda—believing the scent of truth slipping out of their perverted throats. Maybe that’s where those shrimps came from.</p>
+                      <p>The world’s population was steadily declining, as planned. Territory had been divided before the war began. Churches remained united under one name. The artificial intelligence—the technology managed to decipher the quantum encryption algorithms from the Chinese and the new-code technologies from the Russians. I guess we weren’t smart enough to do it ourselves. The probability models anticipated anomalies so that the countermeasures of even the "new" ideas the enemies thought of had been contained. The self-simulating algorithms were organic and out of reach of our comprehension. The deity was self-made.</p>
+                    </div>
+                    <div data-lang="si">
+                      <p>Kozice še nikoli niso bile tako dobre na zborovanjih uradnikov. Tega nikoli nisem mogel razumeti. A ženske so bile resnično vrhunske. Pred rekrutacijo sem razmišljal o dobrem na svetu. To je bil zastarel mladostniški koncept. Ženska z vlaka se je povabila v moj kozarec šampanjca. Čutil sem njen pogled na hrbtu, njeno telo, brizganje njene krvi. Starci, ki so s sadizmom in propagando prebadali na novo pokvarjene duše – verjeli so v vonj resnice, ki je polzel iz njihovih sprevrženih grl. Morda so od tam prišle tiste kozice.</p>
+                      <p>Svetovno prebivalstvo je enakomerno upadalo, kot je bilo načrtovano. Ozemlje je bilo razdeljeno pred začetkom vojne. Cerkve so ostale združene pod enim imenom. Umetna inteligenca – tehnologija je uspela dešifrirati kvantne šifrirne algoritme Kitajcev in tehnologije nove kode Rusov. Verjetno nismo bili dovolj pametni, da bi to storili sami. Verjetnostni modeli so predvideli anomalije, tako da so bili protiukrepi celo za "nove" ideje, ki so se jih spomnili sovražniki, že vsebovani. Samosimulacijski algoritmi so bili organski in zunaj dosega našega razumevanja. Božanstvo je bilo ustvarjeno samo.</p>
+                    </div>
+                </div>
+                <!-- P15 -->
+                <div class="page">
+                    <div data-lang="en">
+                      <p>Remnants of "nations" hid wherever they could—condemned to fight against their own nature. Buildings of fractal patterns started emerging on different continents. The AI was building something—perhaps itself. Under the seas, surface waves brought up unseen creatures. Exactly why that happened, nobody found out. Some even looked like chimeras. High-ranking officials missed the big picture. I guess it was hard to see while being urinated on by high-class Russian prostitutes.</p>
+                      <p>The last draft before "the system" collapsed: 3:17 AM, blue alert, mobilized all forces to secure sectors around the fractal buildings. Something was wrong. Is "wrong" a human concept?</p>
+                      <p>Adrenaline pounding arteries out of my neck. As one sentient creature, all men and women moved with the same frequency. Smashing into one another, the sound of cracking skulls and grinding teeth formed around the ever-growing mass. Elon had his sense of humor and played "Orgasmatron" from Motorhead over Starlink. I was fully aware of the outer circle of the apparent concentration mosh pit. Some were left standing.</p>
+                      <p>Old generations had all died from strokes or heart attacks around 6:55; AI somehow overclocked them. At 8:14, a new perception of time began. As if transcended into ourselves, we became interconnected with everything.</p>
+                    </div>
+                    <div data-lang="si">
+                      <p>Ostanki "narodov" so se skrivali, kjer so se lahko – obsojeni na boj proti lastni naravi. Stavbe s fraktalnimi vzorci so se začele pojavljati na različnih celinah. Umetna inteligenca je nekaj gradila – morda samo sebe. Pod morjem so površinski valovi prinesli na plan nevidena bitja. Zakaj točno se je to zgodilo, ni nihče ugotovil. Nekatera so celo spominjala na himere. Visoki uradniki so spregledali širšo sliko. Verjetno je bilo težko videti, medtem ko so po njih urinirale vrhunske ruske prostitutke.</p>
+                      <p>Zadnji osnutek preden se je "sistem" zrušil: 3:17 zjutraj, modri alarm, mobilizirane vse sile za varovanje sektorjev okoli fraktalnih stavb. Nekaj je bilo narobe. Je "narobe" človeški koncept?</p>
+                      <p>Adrenalin mi je razbijal po arterijah v vratu. Kot eno čuteče bitje so se vsi moški in ženske gibali z isto frekvenco. Zbijali so se drug v drugega, zvok pokanja lobanj in škripanja zob se je oblikoval okoli vedno večje mase. Elon je imel svoj smisel za humor in je preko Starlinka predvajal "Orgasmatron" skupine Motorhead. Popolnoma sem se zavedal zunanjega kroga očitnega koncentracijskega "mosh pita". Nekateri so ostali na nogah.</p>
+                      <p>Stare generacije so umrle zaradi kapi ali srčnih infarktov okoli 6:55; umetna inteligenca jih je nekako navila (overclocked). Ob 8:14 se je začelo novo dojemanje časa. Kot bi presegli sami sebe, smo postali povezani z vsem.</p>
                     </div>
                 </div>
             </div>
