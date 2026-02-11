@@ -1,712 +1,613 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>Kint Sukuroi — Games</title>
-  
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Project Kintsukuroi</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
-  
   <style>
-    :root {
-      --bg-color: #1a1a1a;
-      --paper-color: #f4e4bc;
-      --ink-color: #2b2b2b;
-      --accent-gold: #c5a059;
-      --font-main: 'Crimson Text', serif;
+    :root{ --bg:#1a1a1a; --paper:#f4e4bc; --ink:#2b2b2b; --gold:#c5a059; --shadow:rgba(0,0,0,.45); }
+    *{box-sizing:border-box;}
+    html,body{margin:0; padding:0; height:100%; font-family:"Crimson Text",serif; background:#000; overflow:hidden;}
+
+    /* LOGIN (Minimalist) */
+    #login{ 
+        position:fixed; inset:0; display:flex; flex-direction:column; justify-content:center; align-items:center; 
+        background:#000; z-index:100; transition:opacity .8s ease; padding:20px;
+    }
+    .riddle-container{ text-align:center; color:var(--gold); width:100%; max-width:600px; }
+    .riddle{ 
+        font-style:italic; line-height:1.6; font-size:clamp(1.4rem, 4vw, 2rem); 
+        margin-bottom:40px; text-shadow:0 0 10px rgba(197,160,89,0.2); 
+    }
+    .pw-group{ position:relative; width:100%; max-width:400px; margin:0 auto; transition: opacity 0.5s; }
+    .pw-group.hidden{ opacity:0; pointer-events:none; }
+    
+    .pw{ 
+        background:transparent; border:none; border-bottom:1px solid rgba(197,160,89,0.5); color:#fff; 
+        font-size:1.3rem; padding:10px; outline:none; text-align:center; letter-spacing:3px; 
+        width:100%; font-family:'Courier New', monospace; transition:border-color 0.3s;
+    }
+    .pw:focus{ border-bottom-color:var(--gold); }
+    
+    /* Discrete Countdown */
+    .countdown{
+        font-family:sans-serif; font-size:0.8rem; color:rgba(255,255,255,0.3); margin-top:8px; letter-spacing:1px;
+    }
+    .error{ 
+        color:#ff4444; margin-top:20px; opacity:0; transition:opacity 0.3s; 
+        font-size:0.9rem; font-family:sans-serif; letter-spacing:1px; 
     }
 
-    * {
-      box-sizing: border-box;
+    /* MAIN APP AREA */
+    #app{ height:100dvh; display:none; opacity:0; transition:opacity 1s; padding:clamp(10px, 3vw, 20px); place-items:center; position:relative; }
+    #app.visible{ display:grid; opacity:1; }
+
+    /* BOOK CONTAINER */
+    .book{
+        width:min(860px, 100%); height:min(92dvh, 980px); background:var(--paper); border-radius:8px; 
+        box-shadow:inset 15px 0 40px rgba(0,0,0,.08), 0 20px 50px var(--shadow);
+        position:relative; overflow:hidden; display:grid; grid-template-rows:auto 1fr auto;
     }
 
-    body, html {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      font-family: var(--font-main);
-      background-color: #000;
-      overflow: hidden;
+    /* HEADER */
+    .topbar{ display:flex; justify-content:space-between; align-items:center; padding:12px 18px; border-bottom:1px solid rgba(0,0,0,0.05); }
+    .index-btn{ 
+        text-decoration:none; color:rgba(0,0,0,.6); border:1px solid rgba(0,0,0,.15); padding:5px 10px; 
+        border-radius:4px; background:rgba(255,255,255,.4); font-size:0.8rem; font-family:sans-serif; cursor:pointer;
+        transition:all 0.2s;
+    }
+    .index-btn:hover{ background:rgba(255,255,255,.8); color:#000; }
+    
+    .book-title{ font-size:0.9rem; letter-spacing:1px; text-transform:uppercase; color:rgba(0,0,0,0.5); }
+    .lang-toggle{ font-family:sans-serif; font-size:0.8rem; cursor:pointer; color:rgba(0,0,0,0.7); font-weight:bold; border:1px solid rgba(0,0,0,0.1); padding:4px 8px; border-radius:4px; }
+
+    /* CONTENT AREA */
+    .page-area{ padding:10px 20px 0; overflow:hidden; position:relative; }
+    .page-content{ height:100%; overflow-y:auto; padding-right:10px; color:var(--ink); font-size:clamp(1.1rem, 3vw, 1.25rem); line-height:1.7; text-align:justify; }
+    
+    /* VIEWS: Index vs Story */
+    .view-section{ display:none; animation:fade .4s ease; height:100%; }
+    .view-section.active{ display:block; }
+
+    /* INDEX STYLING */
+    .index-menu { display:flex; flex-direction:column; gap:20px; padding-top:20px; }
+    .story-card {
+        border:1px solid rgba(0,0,0,0.1); border-radius:8px; padding:20px; 
+        background:rgba(255,255,255,0.4); cursor:pointer; transition:transform 0.2s, background 0.2s;
+    }
+    .story-card:hover { transform:translateY(-2px); background:rgba(255,255,255,0.7); }
+    .story-card h2 { margin:0 0 5px; color:#111; font-size:1.4rem; }
+    .story-card p { text-indent:0; margin:0; color:#555; font-style:italic; font-size:1rem; }
+
+    /* STORY PAGES */
+    .page{ display:none; }
+    .page.active{ display:block; }
+    p{ margin:0 0 1.2em; text-indent:1.4em; }
+    p:first-of-type{ text-indent:0; }
+    .page:first-child p:first-child::first-letter{ font-size:3.2em; float:left; line-height:0.8; margin-right:0.1em; color:#111; }
+    .separator{ text-align:center; margin:16px 0; color:#777; letter-spacing:5px; }
+
+    /* CONTROLS */
+    .controls{
+      padding:15px 20px; background:linear-gradient(to bottom, rgba(244,228,188,0), rgba(244,228,188,1) 40%);
+      display:flex; justify-content:space-between; align-items:center;
+    }
+    .controls.hidden{ visibility:hidden; } /* Hide controls on Index page */
+    
+    .btn{
+      border:1px solid rgba(0,0,0,.25); background:rgba(255,255,255,.7); color:#333; padding:10px 18px; 
+      border-radius:6px; font-family:"Crimson Text", serif; font-size:1rem; text-transform:uppercase; 
+      cursor:pointer; min-width:80px;
+    }
+    .btn:disabled{ opacity:0.3; cursor:default; }
+    .page-num{ font-family:sans-serif; font-size:0.85rem; color:rgba(0,0,0,0.5); }
+
+    /* SWIPE HINT */
+    .swipe-hint {
+        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        color: var(--gold); font-size: clamp(1.8rem, 5vw, 2.5rem); font-weight: 600;
+        font-style: italic; opacity: 0; pointer-events: none;
+        z-index: 50; text-align: center; width: 100%;
+        text-shadow: 0 4px 20px rgba(0,0,0, 0.8); 
+        background: rgba(0,0,0,0.6); padding: 20px; backdrop-filter: blur(2px);
+    }
+    @keyframes hintFade {
+        0% { opacity: 0; transform: translate(-50%, -40%); }
+        15% { opacity: 1; transform: translate(-50%, -50%); }
+        70% { opacity: 1; transform: translate(-50%, -50%); }
+        100% { opacity: 0; transform: translate(-50%, -60%); }
     }
 
-    /* === LOGIN SCREEN === */
-    #login-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: #000;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-      transition: opacity 1s ease;
-      padding: 20px;
-    }
+    @keyframes fade{ from{opacity:0; transform:translateY(5px);} to{opacity:1; transform:none;} }
 
-    .riddle-container {
-      text-align: center;
-      color: var(--accent-gold);
-      width: 100%;
-      max-width: 500px;
-    }
-
-    .riddle-text {
-      font-style: italic;
-      line-height: 1.8;
-      font-size: 1.8rem;
-      margin-bottom: 40px;
-      text-shadow: 0 0 10px rgba(197, 160, 89, 0.2);
-    }
-
-    #input-container {
-      transition: opacity 1s ease, visibility 1s ease;
-      opacity: 1;
-      visibility: visible;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    #input-container.hidden {
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-    }
-
-    input[type="password"] {
-      background: transparent;
-      border: none;
-      border-bottom: 3px solid var(--accent-gold);
-      color: #fff;
-      font-size: 1.5rem;
-      padding: 15px 10px;
-      outline: none;
-      text-align: center;
-      letter-spacing: 4px;
-      width: 100%;
-      max-width: 400px;
-      font-family: 'Courier New', monospace;
-      margin-top: 10px;
-    }
-
-    #timer-display {
-      margin-top: 15px;
-      font-family: 'Courier New', monospace;
-      color: var(--accent-gold);
-      font-size: 1.2rem;
-      opacity: 0.8;
-    }
-
-    #error-msg {
-      color: #ff4444;
-      margin-top: 15px;
-      opacity: 0;
-      transition: opacity 0.3s;
-      font-size: 1.2rem;
-      font-family: sans-serif;
-      letter-spacing: 2px;
-    }
-
-    /* === BOOK DISPLAY === */
-    #book-wrapper {
-      display: none;
-      width: 100%;
-      height: 100vh;
-      background-color: var(--bg-color);
-      opacity: 0;
-      transition: opacity 1.5s ease;
-      padding: 10px;
-      overflow: hidden;
-    }
-
-    #book-wrapper.visible {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .book {
-      background-color: var(--paper-color);
-      width: 100%;
-      max-width: 700px;
-      height: 90vh;
-      padding: 30px 40px 80px 40px;
-      box-shadow:
-        inset 15px 0 40px rgba(0,0,0,0.1),
-        8px 8px 25px rgba(0,0,0,0.5);
-      border-radius: 5px 12px 12px 5px;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    .page-content {
-      flex: 1;
-      overflow-y: auto;
-      color: var(--ink-color);
-      font-size: 1.2rem;
-      line-height: 1.8;
-      text-align: justify;
-      padding-right: 10px;
-    }
-
-    /* Scrollbar Styling */
-    .page-content::-webkit-scrollbar { width: 4px; }
-    .page-content::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); }
-    .page-content::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 2px; }
-
-    .page {
-      display: none;
-      animation: fadeIn 0.8s;
-    }
-
-    .page.active {
-      display: block;
-    }
-
-    /* Index Page Styling */
-    .index-list {
-      list-style: none;
-      padding: 0;
-      margin-top: 40px;
-      text-align: center;
-    }
-
-    .index-list li {
-      margin-bottom: 25px;
-    }
-
-    .chapter-link {
-      font-size: 1.6rem;
-      color: #444;
-      text-decoration: none;
-      border-bottom: 1px solid transparent;
-      transition: all 0.3s ease;
-      cursor: pointer;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-    }
-
-    .chapter-link:hover {
-      color: #000;
-      border-bottom: 1px solid #000;
-    }
-
-    .page h2 {
-      text-align: center;
-      margin-bottom: 1.5em;
-      color: #444;
-      font-size: 1.4rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-    }
-
-    p {
-      margin-bottom: 1.5em;
-      text-indent: 1.5em;
-    }
-
-    p:first-of-type {
-      text-indent: 0;
-    }
-
-    .page:not(#index-page) p:first-child::first-letter {
-      font-size: 3.5em;
-      float: left;
-      line-height: 0.8;
-      margin-right: 0.1em;
-      color: var(--bg-color);
-    }
-
-    .separator {
-      text-align: center;
-      margin: 20px 0;
-      color: #888;
-      font-style: italic;
-    }
-
-    /* Navigation Controls */
-    .controls {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 15px 30px;
-      background: linear-gradient(to bottom, rgba(244,228,188,0) 0%, rgba(244,228,188,0.95) 20%);
-      border-radius: 0 0 12px 5px;
-    }
-
-    .page-number {
-      font-size: 1rem;
-      color: #666;
-      font-family: sans-serif;
-    }
-
-    .nav-buttons {
-      display: flex;
-      gap: 15px;
-    }
-
-    .btn-nav {
-      cursor: pointer;
-      border: 2px solid #888;
-      background: rgba(255,255,255,0.8);
-      font-family: 'Crimson Text', serif;
-      font-size: 1.1rem;
-      color: #444;
-      padding: 8px 20px;
-      border-radius: 4px;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      transition: all 0.3s;
-      touch-action: manipulation;
-    }
-
-    .btn-nav:hover {
-      background: rgba(255,255,255,1);
-      border-color: var(--accent-gold);
-      color: var(--accent-gold);
-    }
-
-    .btn-nav:active {
-      transform: scale(0.95);
-    }
-
-    .btn-nav:disabled {
-      color: #ccc;
-      border-color: #ccc;
-      cursor: default;
-      opacity: 0.5;
-    }
-
-    .btn-index {
-      border-color: #555;
-      font-size: 0.9rem;
-      padding: 8px 14px;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* === MOBILE OPTIMIZATIONS === */
-    @media (max-width: 600px) {
-      #book-wrapper { padding: 5px; }
-      .book {
-        width: 100%;
-        height: 95vh;
-        padding: 20px 15px 70px 15px;
-      }
-      .page-content {
-        font-size: 1.1rem;
-        line-height: 1.7;
-      }
-      .riddle-text { font-size: 1.4rem; }
-      .chapter-link { font-size: 1.4rem; }
-      .controls { padding: 12px 10px; }
-      .btn-nav { font-size: 0.9rem; padding: 6px 10px; min-width: 60px; }
-      .page-number { font-size: 0.8rem; display: none; } /* Hide page num on very small screens if needed */
-    }
+    /* Translation Logic */
+    [data-lang="si"] { display: none; }
+    body.show-si [data-lang="en"] { display: none; }
+    body.show-si [data-lang="si"] { display: block; }
   </style>
 </head>
-<body>
+<body class="show-en">
 
-<div id="login-overlay">
-  <div class="riddle-container">
-    <div class="riddle-text">
-      "I am the art of embracing damage.<br>
-      I mend the broken with gold.<br>
-      What is my name?"
-    </div>
-    
-    <div id="input-container">
-      <input type="password" id="pass" placeholder="ENTER KEY" autocomplete="off">
-      <div id="timer-display">29</div>
-      <div id="error-msg">ACCESS DENIED</div>
-    </div>
-  </div>
-</div>
-
-<div id="book-wrapper">
-  <div class="book">
-    <div class="page-content" id="content-area">
+  <!-- LOGIN (English Only) -->
+  <div id="login">
+    <div class="riddle-container">
+      <div class="riddle">“I am the art of embracing damage.<br>I mend the broken with gold.<br>What is my name?”</div>
       
-      <!-- PAGE 0: INDEX -->
-      <div class="page active" id="index-page">
-        <h2>Table of Contents</h2>
-        <ul class="index-list">
-          <li><span class="chapter-link" onclick="goToPage(1)">Gleis 7</span></li>
-          <li><span class="chapter-link" onclick="goToPage(8)">Kint</span></li>
-        </ul>
-        <div class="separator">~ Select a story to begin ~</div>
+      <div class="pw-group" id="pwGroup">
+        <input class="pw" id="pw" type="password" placeholder="KEY / KLJUČ" autocomplete="off">
+        <div class="countdown" id="countdown">29s</div>
       </div>
-
-      <!-- Gleis 7 Pages (Starts at Page 1) -->
-      <div class="page">
-        <h2>Gleis 7</h2>
-        <p>The cigarette fit nicely with the shadows that morning. It was 14 minutes after 8, and the rhythm of him appearing into his consciousness reminded me of a syncope, a little off-beat. The working class was already in their places, and he simply sat there, carrying nothing more than a black leather backpack, with one earphone in his ear and smoke caressing the sunny side of his face. He looked straight through me. The train was approaching, but he remained looking at me.</p>
-        <p>I dozed off in the wagon with my book left open when I noticed him sitting across from me, absently staring into moving trees.</p>
-        <p>There was nobody in that compartment but the two of us. It felt almost like being in a room with an untamed animal covered in human skin; he was being called to something.</p>
-        <p>He put on his sunglasses, earphones silently playing a steady tune, tilted his head a bit, and was away into his own mind.</p>
-        <p>The ticket lady arrived shortly afterward. He had already left his ticket in the open to be checked. No one disturbed him, as if they were informed of his journey.</p>
-        <p>I noticed he carried a camera with him; his backpack wasn't fully closed. I couldn't help but wonder: what does a person like that take pictures of?</p>
-        <p>He didn't move for three straight hours; his sunglasses gave the impression he was constantly observing his surroundings. His breathing was reduced to silence.</p>
-        <p>I finished reading my book and had a satisfied grimace on my face. In that moment, I noticed his fingers move as if tapping to a rhythm. The police border was approaching, and I knew he could sense that too. He had been awake for quite some time now. A peculiar feeling.</p>
-        <p>"It must have been a good book," he remarked.</p>
-        <p>"Excuse me?" I asked.</p>
-        <p>"Oh, yes. It was indeed. It was indeed." I responded honestly.</p>
-        <p>The corners of his lips suggested a smile, but it was hard to tell under his black round sunglasses. He integrated into his persona what his eyes were telling.</p>
-        <p>The doors opened loudly, and one police officer checked our documents in a loud manner. The doors opened again, and another officer slid behind him, all talking into their walkie-talkies. I noticed him observing me while they asked questions about where I was traveling. I had to open my suitcase and wait until they checked my passport number through the central system.</p>
-      </div>
-
-      <div class="page">
-        <p>They didn't ask him anything; he didn't even remove his sunglasses. He gave a polite nod to the officer, and he returned it in a similar manner.</p>
-        <p>He was too young to be someone important, I thought. I'd say he was in his late twenties.</p>
-        <p>"When you travel, leave your luggage slightly open—you won't seem so suspicious next time," he said politely.</p>
-        <p>"They're just doing their job. Humans. Same as you and me. Humans. Same as you and me, but give them a sense of power, and you'll really get to know them. Thank you, young man. I will try your method next time," I decided was an appropriate response.</p>
-        <p>We both looked outside the window until the train continued on its journey.</p>
-        <p>A lovely young lady in an oversized yellow coat and light blue jeans invited herself into our compartment. She carried a bag full of books and something that resembled a small plant tucked away in paper. She too fell asleep after a couple of train stops.</p>
-        <p>I started writing in my notebook all the memorable sentences and some character descriptions. I was something like a writer—or, so I was mostly perceived. My wife waited for me at home; she tidied everything up just before I arrived. Her hair found its way between my fingers just before I kissed her.</p>
-        <p>Scribbling away into my thoughts, I saw that the young man had a delicate tear coming out of the corner of his eye, but his face was numb.</p>
-        <p>"Are you alright, young man?" I asked silently.</p>
-        <p>He just looked at me and smiled; the tear dropped on his clothes. This time I saw the dimples on his cheeks, and his eyes were clearly joyful.</p>
-        <p>"It's Lacrimosa, from Zbiegnew Preisner. I do not understand why, but sometimes I have a feeling it cuts deep inside my chest and releases me from my body."</p>
-        <p>I couldn't say I am studying music; it's a part of me, organic. I am discovering myself with music. I am studying myself. That is exactly why I am traveling and making photographs when it feels right. I've done many things in my life; I have a feeling I am somehow older than I've lived. I finished thirty in May.</p>
-      </div>
-
-      <div class="page">
-        <p>He didn't ask my age; it was also not relevant, but I was significantly older.</p>
-        <p>The girl was still sleeping and breathing like a small cat, curled up in her coat.</p>
-        <p>"You are a writer, I presume?" he read me at a glance.</p>
-        <p>"You might say that, yes."</p>
-        <p>"I always wanted to tell someone my story," he expressed his wish, not really expecting it to happen.</p>
-        <p>"Well, it's a long trip ahead of us. The night will be getting cold, and I'd be honored to hear it—maybe even include some parts in my book if you'd allow. I am sorry, I completely forgot to ask your name. I'm Jonathan."</p>
-        <p>"Kint," he nodded again. We both looked at the girl, who changed her sleeping position as she dozed off in her slumber.</p>
-        <p>I wrote down the milestones needed to write his story. He spoke in a calm manner, systematically analyzing every choice, every mistake he made. Occasionally, we would burst into laughter, noticing the passing of time.</p>
-        <p>I related to his stories quite a bit. I noticed his trip was changing who he was. He was leaving one world for another; I could tell it was a jump he had made many times before. The unknown had a pull on him.</p>
-        <p>Outside was completely dark, and we had arrived in some high mountain area where snow was attaching itself to our window, as if looking for a way in.</p>
-        <p>The girl woke up. Looking around herself, trying to recognize where she was.</p>
-        <p>The coffee lady came knocking. We'd grown quite hungry after an hour or two. All three of us drank coffee, and a certain gratitude was felt. The girl looked at us. The train lights went out. Somehow, the power was out. In the distance, we saw lightning—or what we thought was lightning at least—the electrical cable was obviously severed up ahead. The train passed it by with its inertia. This was going to be a long trip.</p>
-        <p>The girl started typing vigorously into her cellphone. The light illuminated her silhouette into a neon presence. The signal was obviously not very strong here, but she persisted.</p>
-      </div>
-
-      <div class="page">
-        <p>The silence was broken by a woman's scream a couple of compartments ahead, followed only by the laughter of her friends. Someone thought it appropriate to scare the poor girl. The green emergency lights on the floor guided us to the exits. We were hesitant to go out since there was nothing for us out there—nothing but darkness and frost. The silence started to creep in; we started perceiving all the comforting noises of the steel machine, which were now absent.</p>
-        <p>Silence spoke for itself. We were in a half-full train, stranded on the slightly descending slope of a mountain. The last town was two hours away, and we weren't due to arrive anytime soon.</p>
-        <p>One could see the trees forming in the woods like fine painting brushes.</p>
-        <p>"Stay calm, they will come and get us. I've seen it once before. This relation across the mountains is always a bit dodgy this time of year. I just hope that..."</p>
-        <p>Kint stopped speaking and listened sharply.</p>
-        <p>The girl was trying to call someone but with no success. I saw her hands slightly tremble in frustration.</p>
-        <p>"Sehr geehrte Fahrgäste, aufgrund einer technischen Störung..." The woman's voice spoke politely with a slightly worried undertone. Something loud sounded almost like two gunshots in front of the train.</p>
-        <p>At times like these, I think of my wife, of my beloved. Knowing she is in a warm home, safe.</p>
-        <p>The girl froze stiff. Kint was in a meditative state of mind, as if he visualized all of this beforehand. Like figures on a chessboard, simply acting out their script. He tilted his head as if wanting to ask me something. I think I saw a glimpse of his alter ego—or was this really him? In that moment, the lights turned back on. The train started moving again; it was obviously a minor glitch. So, at least, we were told.</p>
-        <p>The girl opened a small bag of peanuts, put her fluffy schapka hat slightly over her eyes, and continued crunching at a slightly calmer pace. My wife sent me a photo of her reading a book while drinking tea in our reading nest by the window. Our house was a tasteful combination of rustic and modern. We kept the second floor cozier for some reason; a little chaos did us good. Kids ran down the wagon, screaming with joy. The woman was caught being momentarily absent in her thoughts. She emerged from a brief freeze with warm eyes, silently looking at us both.</p>
-      </div>
-
-      <div class="page">
-        <p>Kint carried a slight smirk and a concealed weapon—a German Luger.</p>
-        <p>The screaming stopped. Finally. Kids shouldn't be let out of their safety at times like these. Silence crept inside the train. Suddenly, the lights went out, and flashing was seen in the compartments up front. The cellphones illuminated our faces, but Kint remained looking out into the dark.</p>
-        <p>"God rest their souls," he whispered to himself.</p>
-        <p>Killings were done with great care—snuffed out with meticulous detail and care. They didn't even have time to panic. The blood-soaked train kept striving toward its destination—a bleak, dead horse... I had to use the Luger on the old man. There was no pleasure in doing so. The woman was the only witness left. In her pretty yellow jacket, she stepped over cooling bodies, sticky blood dripping from the windows. I don't know what drugs she was on, but in that—dare I say—romantic moment, I felt intrigued.</p>
-        <p>She could be useful. How to kill something already dead, already beyond. She smiled at me. The train came to a slow stop, and I took her through the dark restaurant wagon. One could still smell coffee on the tables. Dim moonlight drew us into silhouettes. Her warmth found its place beside me, gazing into me, into the black of my eyes, searching for something. I felt her lips on mine, kissing me. I just stood there, like an idiot. I had never done this on the job. Suddenly, I felt her naked, shivering body curled up close. One last flash—she was gone as well. She killed herself with my Luger. Not the best date I ever had.</p>
-        <p>Stepping out of the train onto the white rocks, we contacted headquarters for phase two. We were well within the timeframe. The evidence had been planted.</p>
-        <p>Videos were "leaked" three days after the "terrorist massacre," used for a false-flag attack. The woman in yellow was the daughter of a conservative politician who obviously needed some convincing.</p>
-      </div>
-
-      <div class="page">
-        <p>What followed was history repeating itself. Cities were left frozen in time. Swarms of drones delivered the X8QCH virus. Dormant killer caterpillar robots located remains of life, neutralizing the danger. The virus was made to disorient the target, converting them into non-aggressive bags of flesh. It was interesting to observe them repeating the patterns of behavior they knew as children—caterpillars grouping them into piles. Well-orchestrated operators checked on the progress. Like launching a space rocket, everything was checked and pre-calculated. The brilliant chain of command dispersed any possible feelings of guilt or doubt.</p>
-        <p>Shrimps never tasted so good at gatherings of officials. I could never understand that. But the women were, indeed, superb.</p>
-        <p>Before recruitment, I thought about the good in the world. It was an obsolete juvenile concept. The woman from the train invited herself into my champagne glass. I felt her look on my back, her body, the splatter of her blood.</p>
-        <p>Old men piercing the newly corrupted souls with sadism and propaganda—believing the scent of truth slipping out of their perverted throats. Maybe that's where those shrimps came from.</p>
-        <p>The world's population was steadily declining, as planned. Territory had been divided before the war began. Churches remained united under one name. The artificial intelligence—the technology managed to decipher the quantum encryption algorithms from the Chinese and the new-code technologies from the Russians. I guess we weren't smart enough to do it ourselves. The probability models anticipated anomalies so that the countermeasures of even the "new" ideas the enemies thought of had been contained. The self-simulating algorithms were organic and out of reach of our comprehension. The deity was self-made.</p>
-        <p>Remnants of "nations" hid wherever they could—condemned to fight against their own nature.</p>
-        <p>Buildings of fractal patterns started emerging on different continents. The AI was building something—perhaps itself. Under the seas, surface waves brought up unseen creatures. Exactly why that happened, nobody found out. Some even looked like chimeras.</p>
-      </div>
-
-      <div class="page">
-        <p>High-ranking officials missed the big picture. I guess it was hard to see while being urinated on by high-class Russian prostitutes.</p>
-        <p>The last draft before "the system" collapsed: 3:17 AM, blue alert, mobilized all forces to secure sectors around the fractal buildings. Something was wrong.</p>
-        <p>Is "wrong" a human concept?</p>
-        <p>Adrenaline pounding arteries out of my neck. As one sentient creature, all men and women moved with the same frequency. Smashing into one another, the sound of cracking skulls and grinding teeth formed around the ever-growing mass.</p>
-        <p>Elon had his sense of humor and played "Orgasmatron" from Motorhead over Starlink. I was fully aware of the outer circle of the apparent concentration mosh pit. Some were left standing.</p>
-        <p>Old generations had all died from strokes or heart attacks around 6:55; AI somehow overclocked them.</p>
-        <p>At 8:14, a new perception of time began. As if transcended into ourselves, we became interconnected with everything.</p>
-        <div class="separator">~ End of Gleis 7 ~</div>
-      </div>
-
-      <!-- Kint Pages (Starts at Page 8) -->
-      <div class="page">
-        <h2>Kint</h2>
-        <p>Serpentine descending down a mountain, military boots grinding along the unpaved road. Currents flow in the background of silence. All operators in position. The plan was simple: destabilize the country, offer them aid, install the operators, and overtake.</p>
-        <p>Some have foreseen this ancient method. That's where our units came into play. We called them platforms. Psychological operations have proven decisive in the past. Rootkits in the subconscious ticked exactly as we wanted them to. Their thoughts below the surface had been planted, reinforced, and used predictably for our purposes. We named them "sleepers." We transformed them into devices capable of executing commands via radio frequency signals. Other triggers included music, photos, and the most effective stimuli—smell.</p>
-        <p>Force and blackmail brought us to a certain level of efficiency, but over time, resistance was better subdued through conditioning and platforms. Almost all entry points—we called them "doors"—were accessed through trust, evoking love, and exploiting the raw tissue of the psyche by inducing individuals or groups into chronic stress and flooding them with information. The goal was to make them susceptible to C programming while strongly distracted by a task. Usually, subjects succumbed to this suggestion within three to five months. Sleep deprivation accelerated the process.</p>
-        <p>We knew the program was active when the subject woke up every night at 3 a.m., dreaming of the structures and triggers we installed. The programs started losing their effect after three months of losing contact with the inductor.</p>
-        <p>Three psychological platforms were commonly used: one labeled "Parent," the second "Adult," and the third "Child"—also called "Ego states." This was a modified version of Eric Berne's transactional analysis, adapted for covert operations by the special units of leading countries and some influential corporations.</p>
-      </div>
-
-      <div class="page">
-        <p>A priest was used as a vector for triggers. Their training made them resistant to three of the five methods employed. It was my specialty to infiltrate systems. My first goal was to gather intelligence and clear any personal interference.</p>
-        <p>One of our operatives discovered shortly before a mission that both his parents had burned to death in an elderly home. Despite this trauma, his performance was superb, and he maintained his inductor role for another six months. After completing his objective, he was isolated and observed until waves of sorrow and other emotions surfaced. His state served as a model for the X9 unit training. We entered CRISPR tissue and DNA manipulation fused with nano-bio processors. We achieved a collective awareness among units—they operated as a single consciousness.</p>
-        <p>We kept entire units in abandoned Buddhist temples as "sleeper cells." The number of active processes in Europe approached 1,300. Countries had been overtaken from the inside out, working their way from administration to the political core. The populace had long been under the influence of an AI algorithm.</p>
-        <p>There were two rebel groups aware of this movement, one of which was led by the former sleeper. He exhibited an unprecedented level of awareness, with his subconscious more expressed than anything recorded. The firm became aware of him when he was arrested and isolated on charges of forming a sect in a remote mountain village. No one heard from them for three years until members appeared simultaneously in groups of three across 50 capitals worldwide. They simply stood still for exactly twenty-four hours, then disappeared into the crowds like ghosts. Most individuals were unaware of this. No one knew how he managed to synchronize them without technology. He didn't stand out nor cause harm, but his objectives remained unknown.</p>
-        <p>We kept him under observation, and after six days, the guards began believing they were him. They recalled events from his childhood with vivid detail. Highly trained operatives with psy training lasted only nine days before showing signs of a security breach. He recited access keys held by the guards during interrogation—none of them remembered talking with him.</p>
-      </div>
-
-      <div class="page">
-        <p>"Your use of code is childish. You leave the platforms unguarded. If I can access them in two days, they can do it in under seven hours."</p>
-        <p>"Who are they?"</p>
-        <p>He did not respond.</p>
-        <p>His use of an invented language—an altered form of neuro-linguistic programming and code-switching—was his signature.</p>
-        <p>He managed to escape from an underground research facility on German soil—an undiscovered Gestapo bunker repurposed for weapons testing and biological experiments. Cameras showed he was accompanied by three guards, walking at exactly the same distance from each other, with him in the middle. He vanished. His team was never identified again.</p>
-        <p>All forces led double lives. On one side, we played gods; privately, we concealed this world from ourselves. I often stayed in a beach bar to enjoy normality, knowing I could never fully return once I'd glimpsed the other side. None of us understood the depths of our applications—that was the true thrill.</p>
-        <p>... Before me stood a pint of beer with a generous pour. Behind it, the girl working as the bartender looked at me with concern.</p>
-        <p>"It's well over the line," I said appreciatively. I made her laugh. She was the boss's daughter, recently finished high school and entering a new chapter. I noticed her distant awareness of her role as a bartender. You can always tell who was cut out for something "more" in their lives.</p>
-        <p>I recalled my years bartending—studying after shifts, using the coffee machine and restaurant kitchens to make snacks late at night. I often talked with guests long after closing, learning valuable information about their work. They tended to open up at the bar.</p>
-        <p>The girl's jeans were dangerously short. Her golden, curly hair stood out like a rebellious statement. I always had a thing for female bartenders.</p>
-      </div>
-
-      <div class="page">
-        <p>One morning, I woke up under the bar with a glass of water and a note beside me. It read, "My shift was over. Call me when you wake up." I messaged her the next afternoon—thanking her for the water and avoiding calling security. Getting wasted like that would cause problems at work.</p>
-        <p>Her name was Natalia. I visited the bar after a week and learned she had quit.</p>
-        <p>Next mission wasn't scheduled, and none of us knew the exact timing of deployment.</p>
-        <p>That evening, I walked home for an hour to clear my mind. I noticed an unanswered call and a message just before arriving at the agency-managed apartment:</p>
-        <p>"Can I see you today? It's urgent."</p>
-        <p>I'd never had this kind of relationship with her, but it was as if she knew no introductions were necessary. I replied, "Yeah, come on over."</p>
-        <p>"You should stop mixing tequila with beer; you're not the type."</p>
-        <p>"What type do I strike you as?"</p>
-        <p>"Sober, gentle. Sipping the heavy surface of red wine."</p>
-        <p>"I like the Irish pub. You have good beer."</p>
-        <p>"You and I both know the beer is below average. You fell in love with me. You're easy to read."</p>
-        <p>I was stunned at how obvious everything had become.</p>
-        <p>"I may have killed a man. He's still lying in the hallway, bleeding from his head. He wasn't moving when I left. I don't know what to do."</p>
-        <p>"How? Why? How did you..."</p>
-        <p>"I'm kidding. Just wanted to see how you'd react. There's a small meeting today with my roommate. Want to meet her?"</p>
-        <p>"I barely know you," I replied, laughing.</p>
-        <p>"It'll be fun, I promise," she smiled.</p>
-        <p>Her long legs drew me deeper into the night, but I hesitated. The situation felt awkward.</p>
-        <p>"I know you better than you think, Kint. Don't be afraid. Besides, we already slept together that night you passed out at the bar. You were nailing me on the counter. I haven't been fucked that well in ages. You kept talking some weird numbers before blacking out. Anyway, I wrote my number so it would be easier."</p>
-        <p>I laughed, realizing she was telling the truth.</p>
-        <p>"Tequila and beer aren't my poison, you say... fuck."</p>
-      </div>
-
-      <div class="page">
-        <p>She lit a cigarette and sent a message to her roommate. The smoke drifted, breaking the shadows of my room.</p>
-        <p>"What are you doing? I'll have to decline. I have work in the morning."</p>
-        <p>"No, you don't. I know what you do. But that's irrelevant now."</p>
-        <p>I was curious—what did she think she knew about me and my career?</p>
-        <p>"You had him locked up in your facility for eight days. At least, that's what you believed. He wasn't locked up; he wasn't even there."</p>
-        <p>I pulled out my firearm and pressed her against the wall. "Start talking!"</p>
-        <p>She kissed me and grabbed my crotch so hard I almost splattered her brains on the wall.</p>
-        <p>"I am the new recruit. Security clearance is Aurora-7."</p>
-        <p>"I gathered vital information on the movement. But you'll have to fuck it out of me," she said daringly. "My roommate will be here soon."</p>
-        <p>... "Is Natalie your name?"</p>
-        <p>It was a stupid question; operatives never used real names—they had codes.</p>
-        <p>"We have an update on Cologne. The squad followed through with the procedure. However, we believe Kint acted out of plan."</p>
-        <p>"How come you were briefed on this as a recruit?"</p>
-        <p>"It's standard protocol to check for potential loose ends. But you're right—he's a legend among the ranks. I've never met him personally. Are you close?"</p>
-        <p>"We did some work together. I haven't heard from him in almost a year. I knew it was only a matter of time before he lost track."</p>
-        <p>"We need to contain the damage. We need your assessment of what he's capable of."</p>
-        <p>"So, new blood replaces the old dogs, and you want me to rat him out? That's not the code. Listen, someone will be behind your back sooner or later. Would you want that person guarding yours? It's not the code."</p>
-        <p>"She's here."</p>
-      </div>
-
-      <div class="page">
-        <p>A formal-looking middle-aged woman appeared at the door. Her perfectly trimmed hair suggested strictness, but her first smile shattered that assumption.</p>
-        <p>"God, I hate this cover—a fucking librarian again. Hmm, you're cute. Don't worry. Natalie was joking about the sex part. I'm happily married with children, and Natalie just had her fun. Her specialty, actually. She gathers good data. I'm Rosemarie—you can call me Rose."</p>
-        <p>She shook my hand and asked for a glass of wine. As I poured, I glimpsed her undressing her top and bra to remove some wearable electronics. I also noticed scars on her skin—probably the communication mods. An incredibly attractive being. Natalie laid back on the couch, lit another cigarette, and began updating Rose on the Cologne operation.</p>
-        <p>I had two chilled wine glasses in the fridge and a bottle of Casillero del Diablo. I opened a beer for myself and set out some finger food.</p>
-        <p>Natalie managed to perform a penetration test on my laptop while I was in the kitchen.</p>
-        <p>"You need to be more careful with your credentials. I pinged you and received way more data than intended. Why aren't you using the company hardware?"</p>
-        <p>"It's my personal laptop; the operative one is offline in my backpack."</p>
-        <p>"That's a security risk. Do you remember the '97 attack on the company? Forensics revealed a leak from an operator's personal laptop."</p>
-        <p>"It was a coordinated inside job with an inside man. We suspect Kint," Rose added.</p>
-        <p>I felt the condensed frost from the beer bottle on my fingertips. Somehow, it seemed to be getting colder. Both women looked at me, as if scanning the back of my retina for a corpus delicti.</p>
-        <p>"Let's get this show on the road. Cheers, ladies!"</p>
-        <p>They exchanged glances while sipping wine. I could tell they were unsure if I would cooperate.</p>
-        <p>"Kint is just like all of us—gifted in some field, with a difficult past. Events in his life defied all prediction models. Some even called him a prophet. He could sense events before they happened, and this preternatural awareness saved his neck on many missions. However, predicting women proved difficult—that's where I came in."</p>
-        <p>Natalie chuckled; Rose shot her a look.</p>
-        <p>"I mean, I could often tell what they had in mind. I'm not a mind reader, though."</p>
-      </div>
-
-      <div class="page">
-        <p>"Would you describe him as a sadist?" Rose asked softly.</p>
-        <p>"He wasn't exactly a sadist, but I've seen what he's capable of. He didn't enjoy doing those things, but his performance was an art form."</p>
-        <p>"I see... Natalie, please," Rose said calmly.</p>
-        <p>Natalie slowly set her gadgets aside, sipped her wine, and let her fingers drift over Rose's shoulder as she moved closer to me.</p>
-        <p>"What do you think you're doing?"</p>
-        <p>"Just what we're good at. Relax. Be honest," Rose explained.</p>
-        <p>Natalie lifted her skirt halfway, revealing the tips of her breasts as she kneeled. I let her unzip my pants, and she eagerly went at it as if waiting for this moment for a year. Her tongue rolled around the tip, and I was instantly turned on. I grabbed her hair and pulled her closer.</p>
-        <p>"No. She's in charge," Rose said, as if reading my mind.</p>
-        <p>"What is this?"</p>
-        <p>"We need to extract some information from you," Natalie replied with a sly smile. ... Rose began undressing herself as if she had all the time in the world, kissing Natalie's neck and trying not to disturb her pleasure. Rose's lips moved to mine, and she licked my upper lip to tease me.</p>
-        <p>"Aren't you happily married?"</p>
-        <p>"Now you know why," I replied.</p>
-        <p>Natalie slipped Rose onto my erect penis and held her in her arms as she slowly rode me. They kissed passionately, as if lovers who hadn't seen each other in months. I pulled both of them closer.</p>
-        <p>We woke up wrapped in each other's arms, a warm blanket shielding us from the outside world. Rose was still beneath the blanket. Somehow, they had invited themselves back to enjoy me again. Natalie caressed her neck, playing with herself—still staring directly into my eyes.</p>
-        <p>In all my years of service, I'd never experienced anything like this. I came so hard I felt dizzy. I fell asleep quickly after. When I woke, a croissant, orange juice, and a pot of coffee awaited on a tray on the table. They were gone without a trace. I looked around, questioning if it was even real. The wine was half drunk, as were the beers. I lit a cigarette and took a bite of the croissant. Under the coffee cup, I found a small note, like one from a fortune cookie. It read: "Rosebud." It was Kint.</p>
-      </div>
-
-      <div class="page">
-        <p>"Rosebud" was the codename for the operation that cleared a hospital in Russia. Today marked exactly ten years since it happened. For a moment, I felt sorrow. Many civilians had lost their lives that night as collateral damage. Kint had saved two operatives from bleeding out. I was, thankfully, unharmed physically, but the nightmares persisted long afterward. It was one of those jobs. Fuck, I can't believe he remembered. He even gave the recruits the clearance number—typical Kint.</p>
-        <p>Nobody ever discovered what part of his training he'd undergone. Rumor has it he fought his personal demons for a long time before joining the forces. He botched his first mission, lost a female operative, and descended into madness. Nobody heard from him for three years. He was seen on a mountain top, rescued by local climbers. They reported he was dehydrated, delusional, with an obvious intent to end his life there. After that incident, he began developing his artistic side—music and intensive therapy helped revive what was left of him. After recovery, he fell in love. A calmness accompanied him from that moment. I didn't recognize him at first; he was later promoted into cyber units and the quick response division—stepping stones to the psy squad and logistics. No one has seen him since.</p>
-        <p>It seems he knows what everyone in the firm is doing—something like a patron with a dark past. His trademark was often changing camouflage and moving swiftly between different circles. His wife described him as a Greek god Hermes—living between worlds of life and death, appearing wherever he was needed most.</p>
-        <p>The Cologne mission was staged. All "victims" on board were our new recruits—they played dead with state-of-the-art effects. The footage was used as leverage to expose the underground hierarchy.</p>
-        <p>Music from R.E.M. played through the vinyl record in a rustic teahouse. A Luger was loaded, waiting to fire. People started falling from their seats upon noticing the gun. The mask covered my face. The 70-year-old son of Reich's security official looked me sharply in the eyes before being eliminated—two bullets in his torso, one in his neck, and four in his head. I removed the last bullet from the barrel as a reminder of a job well done. Witnesses shrank back in fear. I heard screams as I left the café. Heavy rain began falling as I slipped into a side alley. It felt cleansing. I entered the church—a good place to gather my thoughts for a report. A priest appeared beside me as I reflected on the event.</p>
-        <p>"You did well, my son. The passage is under the altar. Evac-team and new ID are waiting on the other side. Did you keep the last bullet?"</p>
-        <p>"Of course, Father."</p>
-        <p>"Godspeed."</p>
-        <div class="separator">~ End of Kint ~</div>
-      </div>
-
-    </div>
-    
-    <div class="controls">
-      <div class="page-number">Page <span id="page-num">0</span></div>
-      <div class="nav-buttons">
-        <button class="btn-nav btn-index" id="index-btn" onclick="goToPage(0)">Index</button>
-        <button class="btn-nav" id="prev-btn" disabled>Prev</button>
-        <button class="btn-nav" id="next-btn">Next</button>
-      </div>
+      
+      <div class="error" id="err">ACCESS DENIED</div>
     </div>
   </div>
-</div>
 
-<script>
-  // TARGET_HASH for "kintsukuroi" (SHA-256)
-  const TARGET_HASH = "edf2a22f28c630865a34157482f9971033e23d31d3d2647ccfd9534e666cc33a";
+  <!-- APP -->
+  <main id="app">
+    <div id="swipeHint" class="swipe-hint">
+        <div data-lang="en">Swipe to turn page &rarr;</div>
+        <div data-lang="si">Podrsaj za listanje &rarr;</div>
+    </div>
 
-  const passwordInput = document.getElementById('pass');
-  const errorMsg = document.getElementById('error-msg');
-  const loginOverlay = document.getElementById('login-overlay');
-  const bookWrapper = document.getElementById('book-wrapper');
-  const inputContainer = document.getElementById('input-container');
-  const timerDisplay = document.getElementById('timer-display');
+    <article class="book">
+      <!-- HEADER -->
+      <header class="topbar">
+        <div class="index-btn" onclick="goToIndex()">Index</div>
+        <div class="book-title" id="headerTitle">Menu</div>
+        <div class="lang-toggle" onclick="toggleLang()">EN | SI</div>
+      </header>
 
-  // --- 29 Second Timer ---
-  let timeLeft = 29;
-  let loggedIn = false;
+      <!-- SCROLL AREA -->
+      <section class="page-area" id="touchArea">
+        <div class="page-content" id="scroller">
 
-  const timerId = setInterval(() => {
-    if (loggedIn) {
-      clearInterval(timerId);
-      return;
-    }
+            <!-- 1. INDEX VIEW -->
+            <div id="view-index" class="view-section active">
+                <div class="index-menu">
+                    <!-- Gleis 7 Card -->
+                    <div class="story-card" onclick="openStory('gleis7')">
+                        <h2>I. Gleis 7</h2>
+                        <p data-lang="en">The Finale — A train, a writer, and the end.</p>
+                        <p data-lang="si">Finale — Vlak, pisatelj in konec.</p>
+                    </div>
+
+                    <!-- Kint Card -->
+                    <div class="story-card" onclick="openStory('kint')">
+                        <h2>II. Kint</h2>
+                        <p data-lang="en">The Chronicles — Serpentine descending...</p>
+                        <p data-lang="si">Kako se je vse začelo.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. GLEIS 7 STORY -->
+            <div id="view-gleis7" class="view-section">
+                <!-- Page 1 -->
+                <div class="page active">
+                    <div data-lang="en">
+                      <p>The cigarette fit nicely with the shadows that morning. It was 14 minutes after 8, and the rhythm of him appearing into his consciousness reminded me of a syncope, a little off-beat. The working class was already in their places, and he simply sat there, carrying nothing more than a black leather backpack, with one earphone in his ear and smoke caressing the sunny side of his face. He looked straight through me. The train was approaching, but he remained looking at me.</p>
+                      <p class="separator">---</p>
+                      <p>I dozed off in the wagon with my book left open when I noticed him sitting across from me, absently staring into moving trees.</p>
+                    </div>
+                    <div data-lang="si">
+                      <p>Cigareta se je tistega jutra lepo podala sencam. Bilo je 14 minut čez osmo in ritem njegovega pojavljanja v zavest me je spominjal na sinkopo, nekoliko zunaj ritma. Delavski razred je bil že na svojih mestih, on pa je preprosto sedel tam, brez česar koli drugega kot črnega usnjenega nahrbtnika, z eno slušalko v ušesu in dimom, ki je božal sončno stran njegovega obraza. Gledal je naravnost skozi mene. Vlak se je bližal, a on je še naprej gledal vame.</p>
+                      <p class="separator">---</p>
+                      <p>Zadremal sem v vagonu z odprto knjigo, ko sem opazil, da sedi nasproti mene in odsotno strmi v premikajoča se drevesa.</p>
+                    </div>
+                </div>
+                <!-- Page 2 -->
+                <div class="page">
+                    <div data-lang="en">
+                      <p>There was nobody in that compartment but the two of us. It felt almost like being in a room with an untamed animal covered in human skin; he was being called to something. He put on his sunglasses, earphones silently playing a steady tune, tilted his head a bit, and was away into his own mind.</p>
+                      <p>The ticket lady arrived shortly afterward. He had already left his ticket in the open to be checked. No one disturbed him, as if they were informed of his journey. I noticed he carried a camera with him. I couldn’t help but wonder: what does a person like that take pictures of?</p>
+                    </div>
+                    <div data-lang="si">
+                       <p>V tistem kupeju ni bilo nikogar razen naju. Zdelo se je skoraj tako, kot bi bil v sobi z neukročeno živaljo, prekrito s človeško kožo; nekaj ga je klicalo. Nadel si je sončna očala, slušalke so tiho igrale enakomerno melodijo, nagnil je glavo in odtaval v svoj um.</p>
+                       <p>Kmalu zatem je prišla sprevodnica. Svojo vozovnico je že pustil na vidnem mestu za pregled. Nihče ga ni motil, kot da bi bili obveščeni o njegovem potovanju. Opazil sem, da ima s seboj fotoaparat. Nisem si mogel kaj, da se ne bi vprašal: kaj takšna oseba fotografira?</p>
+                    </div>
+                </div>
+                <!-- Page 3 -->
+                <div class="page">
+                    <div data-lang="en">
+                      <p>He didn’t move for three straight hours; his sunglasses gave the impression he was constantly observing his surroundings. His breathing was reduced to silence. I finished reading my book. The police border was approaching, and I knew he could sense that too.</p>
+                      <p>“It must have been a good book,” he remarked.</p>
+                      <p>“Excuse me?” I asked.</p>
+                      <p>“Oh, yes. It was indeed.” I responded honestly.</p>
+                      <p>The doors opened loudly, and one police officer checked our documents. They didn’t ask him anything; he didn’t even remove his sunglasses.</p>
+                      <p>“When you travel, leave your luggage slightly open—you won’t seem so suspicious next time,” he said politely.</p>
+                    </div>
+                    <div data-lang="si">
+                      <p>Tri ure se ni premaknil; njegova sončna očala so dajala vtis, da nenehno opazuje okolico. Njegovo dihanje je bilo zmanjšano na tišino. Končal sem branje knjige. Bližala se je policijska meja in vedel sem, da to čuti tudi on.</p>
+                      <p>“Verjetno je bila dobra knjiga,” je pripomnil.</p>
+                      <p>“Oprostite?” sem vprašal.</p>
+                      <p>“Oh, da. Res je bila. Res je bila,” sem iskreno odgovoril.</p>
+                      <p>Vrata so se glasno odprla in policist je pregledal najine dokumente. Njega niso ničesar vprašali; niti sončnih očal ni snel.</p>
+                      <p>“Ko potujete, pustite prtljago rahlo odprto – naslednjič ne boste videti tako sumljivi,” je vljudno rekel.</p>
+                    </div>
+                </div>
+                <!-- Page 4 -->
+                <div class="page">
+                    <div data-lang="en">
+                      <p>“They’re just doing their job. Humans. Same as you and me. But give them a sense of power, and you’ll really get to know them. Thank you, young man. I will try your method next time.”</p>
+                      <p>A lovely young lady in an oversized yellow coat invited herself into our compartment. She fell asleep after a couple of train stops. Scribbling away into my thoughts, I saw that the young man had a delicate tear coming out of the corner of his eye.</p>
+                      <p>“Are you alright, young man?” I asked silently.</p>
+                      <p>He just looked at me and smiled. “It’s Lacrimosa, from Zbigniew Preisner. I do not understand why, but sometimes I have a feeling it cuts deep inside my chest and releases me from my body.”</p>
+                    </div>
+                    <div data-lang="si">
+                      <p>“Samo opravljajo svoje delo. Ljudje. Enaki kot vi in jaz. Toda dajte jim občutek moči in res jih boste spoznali. Hvala, mladenič. Naslednjič bom poskusil vašo metodo.”</p>
+                      <p>Ljubka mladenka v prevelikem rumenem plašču se je povabila v najin kupe. Po nekaj postajah je zaspala. Ko sem čečkal svoje misli, sem videl, da ima mladenič v kotičku očesa nežno solzo.</p>
+                      <p>“Ste v redu, mladenič?” sem tiho vprašal.</p>
+                      <p>Samo pogledal me je in se nasmehnil. “To je Lacrimosa, Zbigniew Preisner. Ne razumem zakaj, a včasih imam občutek, da mi zareže globoko v prsi in me osvobodi telesa.”</p>
+                    </div>
+                </div>
+                <!-- Page 5 (Finale) -->
+                <div class="page">
+                    <div data-lang="en">
+                      <p>“You are a writer, I presume?” he read me at a glance.</p>
+                      <p>“You might say that, yes.”</p>
+                      <p>“I always wanted to tell someone my story.”</p>
+                      <p>“Well, it’s a long trip ahead of us. I’m Jonathan.”</p>
+                      <p>“Kint,” he nodded.</p>
+                      <p>The train lights went out. Somehow, the power was out. In the distance, we saw lightning. The train was stranded. “Sehr geehrte Fahrgäste...” The woman’s voice spoke politely with a slightly worried undertone. Something loud sounded almost like two gunshots in front of the train.</p>
+                    </div>
+                    <div data-lang="si">
+                      <p>“Predvidevam, da ste pisatelj?” me je prebral z enim pogledom.</p>
+                      <p>“Lahko bi tako rekli, da.”</p>
+                      <p>“Vedno sem želel nekomu povedati svojo zgodbo.”</p>
+                      <p>“No, pred nami je dolga pot. Jaz sem Jonathan.”</p>
+                      <p>“Kint,” je prikimal.</p>
+                      <p>Luči na vlaku so ugasnile. Zmanjkalo je elektrike. V daljavi smo videli bliskanje. Vlak je obtičal. “Sehr geehrte Fahrgäste...” Ženski glas je govoril vljudno z rahlo zaskrbljenim podtonom. Nekaj glasnega je zvenelo skoraj kot dva strela pred vlakom.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. KINT STORY (FULL) -->
+            <div id="view-kint" class="view-section">
+                <!-- P1 -->
+                <div class="page active">
+                    <div data-lang="en">
+                        <p>Serpentine descending down a mountain, military boots grinding along the unpaved road. Currents flow in the background of silence. All operators in position. The plan was simple: destabilize the country, offer them aid, install the operators, and overtake.</p>
+                        <p>Some have foreseen this ancient method. That’s where our units came into play. We called them platforms. Psychological operations have proven decisive in the past. Rootkits in the subconscious ticked exactly as we wanted them to. Their thoughts below the surface had been planted, reinforced, and used predictably for our purposes. We named them “sleepers.” We transformed them into devices capable of executing commands via radio frequency signals. Other triggers included music, photos, and the most effective stimuli—smell.</p>
+                        <p>Force and blackmail brought us to a certain level of efficiency, but over time, resistance was better subdued through conditioning and platforms. Almost all entry points—we called them “doors”—were accessed through trust, evoking love, and exploiting the raw tissue of the psyche by inducing individuals or groups into chronic stress and flooding them with information.</p>
+                    </div>
+                    <div data-lang="si">
+                        <p>Serpentina se je spuščala po gori, vojaški škornji so mleli po neasfaltirani cesti. Tokovi so tekli v ozadju tišine. Vsi operaterji na položajih. Načrt je bil preprost: destabilizirati državo, ji ponuditi pomoč, namestiti operaterje in prevzeti oblast.</p>
+                        <p>Nekateri so predvideli to starodavno metodo. Tu so nastopile naše enote. Imenovali smo jih platforme. Psihološke operacije so se v preteklosti izkazale za odločilne. "Rootkiti" v podzavesti so tiktakali točno tako, kot smo želeli. Njihove misli pod površjem so bile vsajene, okrepljene in predvidljivo uporabljene za naše namene. Imenovali smo jih "speči". Spremenili smo jih v naprave, sposobne izvrševanja ukazov preko radijskih frekvenčnih signalov. Drugi sprožilci so vključevali glasbo, fotografije in najučinkovitejši dražljaj – vonj.</p>
+                        <p>Sila in izsiljevanje sta nas pripeljala do določene stopnje učinkovitosti, a sčasoma je bil odpor bolje zatrt s pogojevanjem in platformami. Skoraj vse vstopne točke – imenovali smo jih "vrata" – so bile dostopne prek zaupanja, zbujanja ljubezni in izkoriščanja surovega tkiva psihe s potiskanjem posameznikov ali skupin v kronični stres in poplavo informacij.</p>
+                    </div>
+                </div>
+                <!-- P2 -->
+                <div class="page">
+                    <div data-lang="en">
+                        <p>The goal was to make them susceptible to C programming while strongly distracted by a task. Usually, subjects succumbed to this suggestion within three to five months. Sleep deprivation accelerated the process. We knew the program was active when the subject woke up every night at 3 a.m., dreaming of the structures and triggers we installed. The programs started losing their effect after three months of losing contact with the inductor.</p>
+                        <p>Three psychological platforms were commonly used: one labeled “Parent,” the second “Adult,” and the third “Child”—also called “Ego states.” This was a modified version of Eric Berne’s transactional analysis, adapted for covert operations by the special units of leading countries and some influential corporations.</p>
+                        <p>A priest was used as a vector for triggers. Their training made them resistant to three of the five methods employed. It was my specialty to infiltrate systems. My first goal was to gather intelligence and clear any personal interference.</p>
+                    </div>
+                    <div data-lang="si">
+                        <p>Cilj je bil narediti jih dovzetne za C programiranje, medtem ko so bili močno raztreseni z drugo nalogo. Običajno so subjekti podlegli tej sugestiji v treh do petih mesecih. Pomanjkanje spanja je pospešilo proces. Vedeli smo, da je program aktiven, ko se je subjekt zbujal vsako noč ob treh zjutraj in sanjal o strukturah ter sprožilcih, ki smo jih namestili.</p>
+                        <p>Uporabljale so se tri psihološke platforme: ena z oznako "Starš", druga "Odrasel" in tretja "Otrok" – imenovana tudi "Ego stanja". To je bila modificirana različica transakcijske analize Erica Berna, prilagojena za tajne operacije.</p>
+                        <p>Duhovnik je bil uporabljen kot vektor za sprožilce. Njihovo usposabljanje jih je naredilo odporne na tri od petih uporabljenih metod. Moja specialnost je bila infiltracija v sisteme.</p>
+                    </div>
+                </div>
+                <!-- P3 -->
+                <div class="page">
+                    <div data-lang="en">
+                        <p>One of our operatives discovered shortly before a mission that both his parents had burned to death in an elderly home. Despite this trauma, his performance was superb, and he maintained his inductor role for another six months. His state served as a model for the X9 unit training. We entered CRISPR tissue and DNA manipulation fused with nano-bio processors. We achieved a collective awareness among units—they operated as a single consciousness.</p>
+                        <p>We kept entire units in abandoned Buddhist temples as “sleeper cells.” The number of active processes in Europe approached 1,300. Countries had been overtaken from the inside out, working their way from administration to the political core.</p>
+                        <p>There were two rebel groups aware of this movement, one of which was led by the former sleeper. He exhibited an unprecedented level of awareness. The firm became aware of him when he was arrested and isolated on charges of forming a sect in a remote mountain village.</p>
+                    </div>
+                    <div data-lang="si">
+                        <p>Eden od naših operativcev je tik pred misijo odkril, da sta oba njegova starša zgorela v domu za ostarele. Kljub tej travmi je bila njegova izvedba vrhunska. Njegovo stanje je služilo kot model za usposabljanje enote X9. Vstopili smo v manipulacijo tkiva in DNA s CRISPR, združeno z nano-bio procesorji. Dosegli smo kolektivno zavest med enotami.</p>
+                        <p>Cele enote smo zadrževali v zapuščenih budističnih templjih kot "speče celice". Število aktivnih procesov v Evropi se je bližalo 1300.</p>
+                        <p>Obstajali sta dve uporniški skupini, ki sta se zavedali tega gibanja; eno je vodil nekdanji speči agent. Izkazoval je raven zavedanja brez primere.</p>
+                    </div>
+                </div>
+                <!-- P4 -->
+                <div class="page">
+                    <div data-lang="en">
+                        <p>No one heard from them for three years until members appeared simultaneously in groups of three across 50 capitals worldwide. They simply stood still for exactly twenty-four hours, then disappeared into the crowds like ghosts. We kept him under observation, and after six days, the guards began believing they were him. Highly trained operatives with psy training lasted only nine days before showing signs of a security breach.</p>
+                        <p>“Your use of code is childish. You leave the platforms unguarded. If I can access them in two days, they can do it in under seven hours.”</p>
+                        <p>“Who are they?”</p>
+                        <p><i>He did not respond.</i></p>
+                        <p>His use of an invented language—an altered form of neuro-linguistic programming and code-switching—was his signature. He managed to escape from an underground research facility on German soil. Cameras showed he was accompanied by three guards, walking at exactly the same distance from each other, with him in the middle. He vanished. His team was never identified again.</p>
+                    </div>
+                    <div data-lang="si">
+                        <p>Tri leta ni nihče slišal o njih, dokler se niso člani pojavili istočasno v skupinah po tri v 50 prestolnicah po svetu. Preprosto so stali pri miru točno 24 ur, nato pa izginili v množici kot duhovi.</p>
+                        <p>Imeli smo ga pod nadzorom in po šestih dneh so stražarji začeli verjeti, da so on. Visoko usposobljeni operativci so zdržali le devet dni.</p>
+                        <p>“Vaša uporaba kode je otročja. Platforme puščate nezavarovane. Če lahko jaz dostopam do njih v dveh dneh, lahko oni to storijo v manj kot sedmih urah.”</p>
+                        <p>“Kdo so oni?”</p>
+                        <p><i>Ni odgovoril.</i></p>
+                        <p>Uspel je pobegniti iz podzemnega raziskovalnega objekta na nemških tleh. Kamere so pokazale, da so ga spremljali trije stražarji, ki so hodili na točno enaki razdalji drug od drugega. Izginil je.</p>
+                    </div>
+                </div>
+                <!-- P5 -->
+                <div class="page">
+                    <div data-lang="en">
+                        <p>All forces led double lives. On one side, we played gods; privately, we concealed this world from ourselves. I often stayed in a beach bar to enjoy normality, knowing I could never fully return once I’d glimpsed the other side. None of us understood the depths of our applications—that was the true thrill.</p>
+                        <p>Before me stood a pint of beer with a generous pour. Behind it, the girl working as the bartender looked at me with concern.</p>
+                        <p>“It’s well over the line,” I said appreciatively. I made her laugh. She was the boss’s daughter, recently finished high school and entering a new chapter. I noticed her distant awareness of her role as a bartender. You can always tell who was cut out for something “more” in their lives.</p>
+                        <p>The girl’s jeans were dangerously short. Her golden, curly hair stood out like a rebellious statement. One morning, I woke up under the bar with a glass of water and a note beside me. It read, “My shift was over. Call me when you wake up.”</p>
+                        <p>Her name was Natalia. I visited the bar after a week and learned she had quit.</p>
+                    </div>
+                    <div data-lang="si">
+                        <p>Vse sile so živele dvojno življenje. Po eni strani smo se igrali bogove; zasebno smo ta svet skrivali pred samimi seboj. Pogosto sem ostajal v baru na plaži, da bi užival v normalnosti. Nihče od nas ni razumel globin naših aplikacij – to je bil pravi čar.</p>
+                        <p>Pred menoj je stal vrček piva z velikodušno mero. Za njim me je zaskrbljeno gledalo dekle, ki je delalo kot natakarica.</p>
+                        <p>“Krepko čez črto,” sem rekel s hvaležnostjo. Nasmejal sem jo. Bila je šefova hči. Opazil sem njeno oddaljeno zavedanje svoje vloge. Vedno lahko prepoznaš tiste, ki so ustvarjeni za nekaj "več".</p>
+                        <p>Njene kavbojke so bile nevarno kratke. Nekega jutra sem se zbudil pod točilnim pultom s kozarcem vode in sporočilom: "Moja izmena se je končala. Pokliči me, ko se zbudiš."</p>
+                        <p>Ime ji je bilo Natalia. Po tednu dni sem obiskal bar in izvedel, da je dala odpoved.</p>
+                    </div>
+                </div>
+                <!-- P6 -->
+                <div class="page">
+                    <div data-lang="en">
+                        <p>That evening, I walked home for an hour to clear my mind. I noticed an unanswered call and a message just before arriving at the agency-managed apartment: <strong>“Can I see you today? It’s urgent.”</strong></p>
+                        <p><i>I’d never had this kind of relationship with her, but it was as if she knew no introductions were necessary. I replied, “Yeah, come on over.”</i></p>
+                        <p>“You should stop mixing tequila with beer; you’re not the type.”</p>
+                        <p>“What type do I strike you as?”</p>
+                        <p>“Sober, gentle. Sipping the heavy surface of red wine. You fell in love with me. You’re easy to read.”</p>
+                        <p><i>I was stunned at how obvious everything had become.</i></p>
+                        <p>“I may have killed a man. He’s still lying in the hallway, bleeding from his head... I’m kidding. Just wanted to see how you’d react. There’s a small meeting today with my roommate. Want to meet her?”</p>
+                        <p>“It’ll be fun, I promise. Besides, we already slept together that night you passed out at the bar.”</p>
+                    </div>
+                    <div data-lang="si">
+                        <p>Tisti večer sem eno uro hodil domov, da bi si zbistril misli. Tik preden sem prispel v stanovanje, sem opazil neodgovorjen klic in sporočilo: <strong>“Te lahko vidim danes? Nujno je.”</strong></p>
+                        <p><i>Nikoli nisem imel takšnega odnosa z njo, a bilo je, kot da bi vedela, da predstavitve niso potrebne. Odgovoril sem: “Ja, pridi.”</i></p>
+                        <p>“Moral bi nehati mešati tekilo s pivom; nisi tak tip.”</p>
+                        <p>“Kakšen tip pa se ti zdim?”</p>
+                        <p>“Trezen, nežen. Tak, ki srka težko gladino rdečega vina. Zaljubil si se vame. Lahko te je brati.”</p>
+                        <p>“Morda sem ubila človeka. Še vedno leži na hodniku, krvavi iz glave... Hecam se. Samo hotela sem videti, kako boš reagiral. Danes imam majhen sestanek s sostanovalko. Jo želiš spoznati?”</p>
+                        <p>“Zabavno bo, obljubim. Poleg tega sva že spala skupaj tisto noč, ko si v baru izgubil zavest.”</p>
+                    </div>
+                </div>
+                <!-- P7 -->
+                <div class="page">
+                    <div data-lang="en">
+                        <p>“What are you doing? I’ll have to decline. I have work in the morning.”</p>
+                        <p>“No, you don’t. I know what you do. But that’s irrelevant now.”</p>
+                        <p>“You had him locked up in your facility for eight days. At least, that’s what you believed. He wasn’t locked up; he wasn’t even there.”</p>
+                        <p><i>I pulled out my firearm and pressed her against the wall. “Start talking!”</i></p>
+                        <p>She kissed me and grabbed my crotch. “I am the new recruit. Security clearance is Aurora-7.”</p>
+                        <p>“We have an update on Cologne. The squad followed through with the procedure. However, we believe Kint acted out of plan. We need to contain the damage.”</p>
+                        <p>“She’s here.”</p>
+                        <p><i>A formal-looking middle-aged woman appeared at the door. Her perfectly trimmed hair suggested strictness, but her first smile shattered that assumption.</i></p>
+                        <p>“God, I hate this cover—a fucking librarian again. I’m Rosemarie—you can call me Rose. Natalie was just having her fun. Her specialty, actually. She gathers good data.”</p>
+                    </div>
+                    <div data-lang="si">
+                        <p>“Kaj delaš? Moral bom zavrniti. Zjutraj imam delo.”</p>
+                        <p>“Ne, nimaš dela. Vem, kaj delaš. A to je zdaj nepomembno.”</p>
+                        <p>“Osem dni ste ga imeli zaprtega v svojem objektu. Vsaj tako ste verjeli. Ni bil zaprt; sploh ga ni bilo tam.”</p>
+                        <p><i>Izvlekel sem orožje in jo pritisnil ob steno. “Govori!”</i></p>
+                        <p>Poljubila me je in me zgrabila za mednožje. “Jaz sem nova rekrutka. Varnostno dovoljenje je Aurora-7.”</p>
+                        <p>“Imamo nove informacije o Kölnu. Enota je izvedla postopek. Vendar verjamemo, da je Kint ravnal mimo načrta. Škodo moramo omejiti.”</p>
+                        <p>“Tukaj je.”</p>
+                        <p><i>Na vratih se je pojavila urejena ženska srednjih let. Njena popolna pričeska je nakazovala strogost, a njen prvi nasmeh je to domnevo razblinil.</i></p>
+                        <p>“Bog, sovražim to krinko – spet prekleta knjižničarka. Jaz sem Rosemarie – lahko me kličeš Rose.”</p>
+                    </div>
+                </div>
+                <!-- P8 -->
+                <div class="page">
+                    <div data-lang="en">
+                        <p>As I poured wine, I glimpsed Rose undressing to remove wearable electronics. I noticed scars—communication mods. Natalie performed a penetration test on my laptop while I was in the kitchen.</p>
+                        <p>“You need to be more careful. It was a coordinated inside job with an inside man. We suspect Kint,” Rose added.</p>
+                        <p>“Kint is just like all of us—gifted in some field, with a difficult past. Some even called him a prophet. However, predicting women proved difficult—that’s where I came in.”</p>
+                        <p>“Would you describe him as a sadist?” Rose asked.</p>
+                        <p>“He wasn’t exactly a sadist, but his performance was an art form.”</p>
+                        <p>“We need to extract some information from you,” Natalie replied with a sly smile.</p>
+                        <p><i>Rose began undressing herself as if she had all the time in the world. Natalie slipped Rose onto me. They kissed passionately, as if lovers who hadn’t seen each other in months. In all my years of service, I’d never experienced anything like this.</i></p>
+                    </div>
+                    <div data-lang="si">
+                        <p>Ko sem točil vino, sem opazil, da se Rose slači, da bi odstranila nosljivo elektroniko. Opazil sem brazgotine – komunikacijske modifikacije. Natalie je medtem izvedla penetracijski test na mojem prenosniku.</p>
+                        <p>“Biti moraš bolj previden. Šlo je za usklajen napad od znotraj. Sumimo Kinta,” je dodala Rose.</p>
+                        <p>“Kint je tak kot vsi mi – nadarjen na določenem področju, s težko preteklostjo. Nekateri so ga celo klicali prerok. Vendar se je napovedovanje žensk izkazalo za težavno – tu sem vskočil jaz.”</p>
+                        <p>“Bi ga opisali kot sadista?” je vprašala Rose.</p>
+                        <p>“Ni bil ravno sadist, ampak videl sem, česa je sposoben. Njegova izvedba je bila umetnost.”</p>
+                        <p>“Od tebe moramo izvleči nekaj informacij,” je z zvitim nasmehom odgovorila Natalie.</p>
+                        <p><i>Rose se je začela slačiti, kot da ima ves čas na svetu. Natalie je spustila Rose name. Strastno sta se poljubljali, kot ljubimki, ki se nista videli mesece.</i></p>
+                    </div>
+                </div>
+                <!-- P9 -->
+                <div class="page">
+                    <div data-lang="en">
+                        <p><i>When I woke, a croissant, orange juice, and a pot of coffee awaited on a tray on the table. They were gone without a trace. Under the coffee cup, I found a small note. It read: “Rosebud.” It was Kint.</i></p>
+                        <p><i>“Rosebud” was the codename for the operation that cleared a hospital in Russia. Today marked exactly ten years since it happened. For a moment, I felt sorrow. Many civilians had lost their lives that night as collateral damage. Kint had saved two operatives from bleeding out. Fuck, I can’t believe he remembered. He even gave the recruits the clearance number—typical Kint.</i></p>
+                        <p><i>Nobody ever discovered what part of his training he’d undergone. Rumor has it he fought his personal demons for a long time before joining the forces. He botched his first mission, lost a female operative, and descended into madness. Nobody heard from him for three years.</i></p>
+                    </div>
+                    <div data-lang="si">
+                        <p><i>Ko sem se zbudil, so me na pladnju na mizi čakali rogljiček, pomarančni sok in kava. Izginili sta brez sledu. Pod skodelico kave sem našel majhen listek. Pisalo je: “Rosebud”. Bil je Kint.</i></p>
+                        <p><i>“Rosebud” je bilo kodno ime za operacijo čiščenja bolnišnice v Rusiji. Danes je minilo točno deset let, odkar se je to zgodilo. Za trenutek sem začutil žalost. Kint je rešil dva operativca pred izkrvavitvijo. Prekletstvo, ne morem verjeti, da si je zapomnil. Rekrutom je dal celo varnostno številko – tipičen Kint.</i></p>
+                        <p><i>Nihče ni nikoli odkril, kakšen del usposabljanja je prestal. Govori se, da se je dolgo boril z osebnimi demoni, preden se je pridružil silam. Svojo prvo misijo je zavozil, izgubil operativko in zdrsel v norost. Tri leta ni nihče slišal zanj.</i></p>
+                    </div>
+                </div>
+                <!-- P10 -->
+                <div class="page">
+                    <div data-lang="en">
+                        <p>He was seen on a mountain top, rescued by local climbers. They reported he was dehydrated, delusional, with an obvious intent to end his life there. After that incident, he began developing his artistic side—music and intensive therapy helped revive what was left of him. After recovery, he fell in love. A calmness accompanied him from that moment. I didn’t recognize him at first; he was later promoted into cyber units.</p>
+                        <p>It seems he knows what everyone in the firm is doing—something like a patron with a dark past. His trademark was often changing camouflage and moving swiftly between different circles. His wife described him as a Greek god Hermes—living between worlds of life and death, appearing wherever he was needed most.</p>
+                        <p>The Cologne mission was staged. All “victims” on board were our new recruits—they played dead with state-of-the-art effects. The footage was used as leverage to expose the underground hierarchy.</p>
+                    </div>
+                    <div data-lang="si">
+                        <p>Videli so ga na gorskem vrhu, rešili so ga lokalni plezalci. Poročali so, da je bil dehidriran, bloden in z očitnim namenom, da tam konča svoje življenje. Po tem incidentu je začel razvijati svojo umetniško plat. Po okrevanju se je zaljubil. Od tistega trenutka ga je spremljala mirnost. Sprva ga nisem prepoznal.</p>
+                        <p>Zdi se, da ve, kaj počnejo vsi v podjetju – kot nekakšen patron s temno preteklostjo. Njegov zaščitni znak je bilo pogosto menjavanje kamuflaže in hitro gibanje med različnimi krogi. Njegova žena ga je opisala kot grškega boga Hermesa – živel je med svetovi življenja in smrti ter se pojavljal tam, kjer je bil najbolj potreben.</p>
+                        <p>Misija v Kölnu je bila zrežirana. Vse "žrtve" na krovu so bili naši novi rekruti – igrali so mrtve z uporabo najsodobnejših efektov. Posnetki so bili uporabljeni kot vzvod za razkritje podzemne hierarhije.</p>
+                    </div>
+                </div>
+                <!-- P11 -->
+                <div class="page">
+                    <div data-lang="en">
+                        <p><i>Music from R.E.M. played through the vinyl record in a rustic teahouse. The Luger was loaded, waiting to fire. People started falling from their seats upon noticing the gun. The mask covered my face. The 70-year-old son of Reich’s security official looked me sharply in the eyes before being eliminated—two bullets in his torso and four in his head. I removed the two last bullets from the barrel as a reminder of a job well done. Witnesses shrank back in fear. I heard screams as I left the café. Heavy rain began falling as I slipped into a side alley. It felt cleansing.</i></p>
+                        <p><i>I entered the church—a good place to gather my thoughts for a report. A priest appeared beside me as I reflected on the event.</i></p>
+                        <p>“You did well, my son. The passage is under the altar. Evac-team and new IDs are waiting on the other side. Did you keep the last bullet?”</p>
+                        <p>“Of course, Father.”</p>
+                        <p>“Godspeed.”</p>
+                    </div>
+                    <div data-lang="si">
+                        <p><i>Glasba skupine R.E.M. se je vrtela na vinilni plošči v rustikalni čajnici. Luger je bil napolnjen, pripravljen na strel. Ljudje so začeli padati s sedežev, ko so opazili pištolo. Maska mi je prekrivala obraz. 70-letni sin rajhovega varnostnega uradnika me je ostro pogledal v oči, preden je bil eliminiran. Odstranil sem zadnja dva naboja iz cevi kot spomin na dobro opravljeno delo. Ko sem zapuščal kavarno, sem slišal krike. Začel je padati močan dež. Delovalo je očiščujoče.</i></p>
+                        <p><i>Vstopil sem v cerkev – dober kraj za zbiranje misli za poročilo. Ob meni se je pojavil duhovnik.</i></p>
+                        <p>“Dobro si opravil, sin moj. Prehod je pod oltarjem. Evakuacijska ekipa in nova identiteta te čakata na drugi strani. Si obdržal zadnji naboj?”</p>
+                        <p>“Seveda, oče.”</p>
+                        <p>“Srečno pot.”</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+      </section>
+
+      <!-- FOOTER CONTROLS -->
+      <footer class="controls hidden" id="controls">
+        <button class="btn" id="prev" disabled>Prev</button>
+        <span class="page-num"><span id="pnum">1</span> / <span id="ptotal">1</span></span>
+        <button class="btn" id="next">Next</button>
+      </footer>
+
+    </article>
+  </main>
+
+  <script>
+    // --- CONFIG ---
+    const TARGET_HASH = "edf2a22f28c630865a34157482f9971033e23d31d3d2647ccfd9534e666cc33a";
     
-    timeLeft--;
-    if (timeLeft >= 0) {
-      timerDisplay.innerText = timeLeft;
+    // --- DOM ---
+    const login = document.getElementById("login");
+    const app = document.getElementById("app");
+    const pw = document.getElementById("pw");
+    const pwGroup = document.getElementById("pwGroup");
+    const err = document.getElementById("err");
+    const countdownEl = document.getElementById("countdown");
+    const swipeHint = document.getElementById("swipeHint");
+    
+    const scroller = document.getElementById("scroller");
+    const controls = document.getElementById("controls");
+    const headerTitle = document.getElementById("headerTitle");
+    
+    const prev = document.getElementById("prev");
+    const next = document.getElementById("next");
+    const pnum = document.getElementById("pnum");
+    const ptotal = document.getElementById("ptotal");
+
+    let currentStory = null; 
+    let currentPageIdx = 0;
+    let storyPages = [];
+
+    // --- LOGIC ---
+
+    // 1. LOGIN
+    let timeLeft = 29;
+    const timer = setInterval(() => {
+        timeLeft--;
+        countdownEl.textContent = timeLeft + "s";
+        if(timeLeft<=0){
+            clearInterval(timer);
+            countdownEl.style.display="none";
+            pwGroup.classList.add("hidden");
+        }
+    }, 1000);
+
+    async function sha256(m){
+        const b = new TextEncoder().encode(m);
+        const h = await crypto.subtle.digest("SHA-256", b);
+        return Array.from(new Uint8Array(h)).map(x=>x.toString(16).padStart(2,"0")).join("");
     }
 
-    if (timeLeft < 0) {
-      inputContainer.classList.add('hidden');
-      clearInterval(timerId);
-    }
-  }, 1000);
-
-  // SHA-256 Hashing Function
-  async function sha256(message) {
-      const msgBuffer = new TextEncoder().encode(message);
-      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  }
-
-  // Password Verification
-  passwordInput.addEventListener('keyup', async function(e) {
-      if (timeLeft < 0) return; // Prevent input if timer already expired
-
-      if (e.key === 'Enter') {
-          const inputVal = this.value.toLowerCase().trim();
-          const inputHash = await sha256(inputVal);
-
-          if (inputHash === TARGET_HASH) {
-              // Success
-              loggedIn = true;
-              clearInterval(timerId);
-              
-              this.style.borderColor = "#4BB543";
-              timerDisplay.style.opacity = "0";
-              loginOverlay.style.opacity = "0";
-              setTimeout(() => {
-                  loginOverlay.style.display = "none";
-                  bookWrapper.classList.add('visible');
-                  setTimeout(() => {
-                      bookWrapper.style.opacity = "1";
-                  }, 50);
-              }, 1000);
-          } else {
-              // Failure
-              errorMsg.style.opacity = "1";
-              this.style.borderColor = "#ff4444";
-              setTimeout(() => {
-                  errorMsg.style.opacity = "0";
-                  this.style.borderColor = "#c5a059";
-              }, 2000);
-          }
+    pw.addEventListener("keydown", async (e) => {
+      if(e.key === "Enter"){
+        const val = pw.value.toLowerCase().trim();
+        const h = await sha256(val);
+        if(h === TARGET_HASH){
+            clearInterval(timer);
+            login.style.opacity="0";
+            setTimeout(()=>{
+                login.style.display="none";
+                app.classList.add("visible");
+            }, 800);
+        } else {
+            err.style.opacity="1";
+            setTimeout(()=>err.style.opacity="0", 1500);
+        }
       }
-  });
+    });
 
-  // PAGINATION LOGIC
-  const pages = document.querySelectorAll('.page');
-  const pageNumSpan = document.getElementById('page-num');
-  const prevBtn = document.getElementById('prev-btn');
-  const nextBtn = document.getElementById('next-btn');
-
-  let currentPage = 0; // 0 is Index
-  const totalPages = pages.length;
-
-  function updateButtons() {
-    // If index, disable prev
-    if (currentPage === 0) {
-      prevBtn.disabled = true;
-      nextBtn.disabled = true; // Can't "next" from index, must choose link
-      pageNumSpan.innerText = "Index";
-    } else {
-      prevBtn.disabled = false;
-      nextBtn.disabled = (currentPage === totalPages - 1);
-      pageNumSpan.innerText = "Page " + currentPage;
+    // 2. NAVIGATION & STORIES
+    function goToIndex(){
+        currentStory = null;
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+        document.getElementById('view-index').classList.add('active');
+        controls.classList.add('hidden');
+        headerTitle.textContent = "Menu";
+        scroller.scrollTop = 0;
     }
-  }
 
-  function goToPage(index) {
-    if (index < 0 || index >= totalPages) return;
-    
-    // Hide current
-    pages[currentPage].classList.remove('active');
-    
-    // Show new
-    currentPage = index;
-    pages[currentPage].classList.add('active');
-    
-    // Reset scroll
-    document.getElementById('content-area').scrollTop = 0;
-    
-    updateButtons();
-  }
+    function openStory(id){
+        currentStory = id;
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+        
+        const view = document.getElementById('view-'+id);
+        view.classList.add('active');
+        
+        // Setup pagination
+        storyPages = Array.from(view.querySelectorAll('.page'));
+        currentPageIdx = 0;
+        updatePagination();
+        
+        controls.classList.remove('hidden');
+        headerTitle.textContent = id === 'gleis7' ? 'Gleis 7' : 'Kint';
+        
+        // Show swipe hint
+        swipeHint.style.animation = "none";
+        swipeHint.offsetHeight; /* trigger reflow */
+        swipeHint.style.animation = "hintFade 4s forwards";
+    }
 
-  function changePage(direction) {
-    if (currentPage === 0 && direction > 0) return; // Block next on index
-    goToPage(currentPage + direction);
-  }
+    function updatePagination(){
+        storyPages.forEach((p,i) => {
+            p.classList.toggle('active', i === currentPageIdx);
+        });
+        pnum.textContent = (currentPageIdx + 1);
+        ptotal.textContent = storyPages.length;
+        prev.disabled = currentPageIdx === 0;
+        next.disabled = currentPageIdx === storyPages.length - 1;
+        scroller.scrollTop = 0;
+    }
 
-  prevBtn.addEventListener('click', () => changePage(-1));
-  nextBtn.addEventListener('click', () => changePage(1));
+    prev.addEventListener('click', () => {
+        if(currentPageIdx > 0) { currentPageIdx--; updatePagination(); }
+    });
+    next.addEventListener('click', () => {
+        if(currentPageIdx < storyPages.length - 1) { currentPageIdx++; updatePagination(); }
+    });
 
-  // Initialize buttons
-  updateButtons();
-</script>
+    // 3. SWIPE
+    let ts = 0;
+    const touchArea = document.getElementById('touchArea');
+    touchArea.addEventListener('touchstart', e => { ts = e.changedTouches[0].screenX; });
+    touchArea.addEventListener('touchend', e => {
+        const te = e.changedTouches[0].screenX;
+        if(!currentStory) return;
+        if(te < ts - 50 && currentPageIdx < storyPages.length - 1){ currentPageIdx++; updatePagination(); }
+        if(te > ts + 50 && currentPageIdx > 0){ currentPageIdx--; updatePagination(); }
+    });
 
+    // 4. LANGUAGE
+    function toggleLang(){
+        const b = document.body;
+        if(b.classList.contains('show-en')){
+            b.classList.remove('show-en');
+            b.classList.add('show-si');
+            localStorage.setItem('kint-lang','si');
+        } else {
+            b.classList.remove('show-si');
+            b.classList.add('show-en');
+            localStorage.setItem('kint-lang','en');
+        }
+    }
+    if(localStorage.getItem('kint-lang')==='si'){
+        document.body.classList.remove('show-en');
+        document.body.classList.add('show-si');
+    }
+
+  </script>
 </body>
 </html>
